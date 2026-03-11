@@ -1,0 +1,3075 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="NIA Calculator">
+<title>NIA Premium Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{--red:#C8102E;--dark:#8B0D20;--bg:#F0EEE9;--border:#D8D5CF;--green:#28A745;--blue:#0066CC;--gold:#F5C842;--muted:#888;--lr:#FFF0F2;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Noto Sans Devanagari',-apple-system,sans-serif;background:var(--bg);color:#1C1C1E;min-height:100vh;padding-bottom:70px}
+
+/* HEADER */
+.hdr{background:linear-gradient(150deg,var(--red),var(--dark));padding:44px 18px 18px;color:#fff;position:relative;overflow:hidden}
+.hdr::before{content:'';position:absolute;top:-30px;right:-30px;width:160px;height:160px;background:rgba(255,255,255,.06);border-radius:50%}
+.hdr-row{display:flex;align-items:center;gap:12px;position:relative;z-index:1}
+.badge{width:50px;height:50px;background:#fff;border-radius:13px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;color:var(--red);flex-shrink:0;box-shadow:0 3px 10px rgba(0,0,0,.2)}
+.hdr h1{font-size:19px;font-weight:700}
+.hdr p{font-size:12px;opacity:.8;margin-top:2px}
+.adv-bar{margin-top:12px;background:rgba(255,255,255,.13);border-radius:10px;padding:9px 13px;font-size:12px;position:relative;z-index:1}
+
+/* NAV */
+.nav{display:flex;background:#fff;border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;position:sticky;top:0;z-index:200;box-shadow:0 2px 8px rgba(0,0,0,.07)}
+.nav::-webkit-scrollbar{display:none}
+.ntab{flex-shrink:0;padding:10px 13px;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;text-align:center}
+.ntab span{display:block;font-size:16px;margin-bottom:1px}
+.ntab.on{color:var(--red);border-bottom-color:var(--red);background:var(--lr)}
+
+/* LAYOUT */
+.wrap{padding:13px;max-width:440px;margin:0 auto}
+.sec{display:none}.sec.on{display:block}
+.card{background:#fff;border-radius:16px;padding:15px;margin-bottom:11px;box-shadow:0 1px 6px rgba(0,0,0,.07)}
+.ch{font-size:14px;font-weight:700;color:var(--red);margin-bottom:13px}
+
+/* INPUTS */
+.lbl{font-size:12.5px;font-weight:700;margin-bottom:5px;margin-top:12px;color:#333;display:flex;justify-content:space-between;align-items:center}
+.lbl:first-child{margin-top:0}
+.atag{background:var(--lr);color:var(--red);font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px}
+input,select,textarea{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:11px;font-size:14px;font-family:inherit;background:#fff;color:#1C1C1E;-webkit-appearance:none}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--red)}
+textarea{resize:vertical;min-height:70px}
+
+/* ZONE TOGGLE */
+.ztg{display:flex;background:#F5F5F7;border-radius:11px;padding:3px;gap:3px}
+.ztb{flex:1;padding:9px 4px;text-align:center;font-size:12px;font-weight:600;color:var(--muted);border-radius:9px;cursor:pointer;transition:all .15s}
+.ztb.on{background:#fff;color:var(--red);box-shadow:0 1px 4px rgba(0,0,0,.1)}
+
+/* PILLS */
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.pgrid4{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.pill{background:#F5F5F7;border:2px solid transparent;border-radius:10px;padding:9px 4px;text-align:center;font-size:12.5px;font-weight:600;cursor:pointer;transition:all .15s}
+.pill.on{background:var(--lr);border-color:var(--red);color:var(--red)}
+
+/* PLAN PILLS */
+.plgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ppill{border:2px solid var(--border);border-radius:12px;padding:11px 6px;text-align:center;cursor:pointer;transition:all .15s}
+.ppill.on{border-color:var(--red);background:var(--lr)}
+.ppill .pn{font-size:13px;font-weight:700}
+.ppill .pd{font-size:10px;color:var(--muted);margin-top:2px}
+.ppill.on .pd{color:var(--red)}
+
+/* TERM TAG */
+.tag{display:inline-block;background:var(--lr);color:var(--red);font-size:10px;font-weight:700;padding:1px 6px;border-radius:6px;margin-left:5px}
+
+/* MEMBERS */
+.mrow{background:#FAF8F5;border-radius:11px;padding:11px 13px;margin-bottom:8px;border:1px solid var(--border)}
+.mrow-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.mname{font-size:13px;font-weight:700}
+.del-m{background:none;border:none;font-size:20px;cursor:pointer;color:#ccc;padding:0 4px;line-height:1}
+.del-m:active{color:var(--red)}
+.m-dob{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:inherit;background:#fff}
+.m-name{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:inherit;background:#fff;margin-bottom:7px}
+.m-name:focus,.m-dob:focus{outline:none;border-color:var(--red)}
+.m-row2{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.m-lbl{font-size:11px;color:#888;font-weight:600;margin-bottom:4px}
+.m-dob:focus{outline:none;border-color:var(--red)}
+.m-age{font-size:11.5px;color:var(--muted);margin-top:4px}
+.add-m{width:100%;background:none;border:2px dashed #CCC;border-radius:11px;padding:12px;font-size:13px;font-weight:700;color:var(--red);cursor:pointer;font-family:inherit;margin-top:6px;transition:all .15s}
+.add-m:active{background:var(--lr)}
+
+/* DISCOUNTS */
+.dcard{background:#F0FFF4;border:1.5px solid #B8EAC8;border-radius:14px;padding:13px 15px;margin-bottom:11px}
+.dtitle{font-size:13px;font-weight:700;color:#155724;margin-bottom:10px}
+.crow{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #D4EDDA;cursor:pointer;user-select:none}
+.crow:last-child{border:none}
+.cbox{width:22px;height:22px;border:2px solid #28A745;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;background:#fff;transition:all .15s;color:transparent}
+.cbox.on{background:#28A745;color:#fff}
+.clbl{flex:1;font-size:12.5px;line-height:1.3}
+.clbl small{display:block;font-size:10.5px;color:var(--muted);margin-top:1px}
+.cpct{font-size:12px;font-weight:700;padding:2px 8px;border-radius:7px}
+.cpct.d{background:#D4EDDA;color:#155724}
+.cpct.l{background:#FFE0E3;color:#721C24}
+
+/* NOTE BOX */
+.note{background:#EEF5FF;border-left:3px solid var(--blue);padding:9px 12px;border-radius:0 9px 9px 0;font-size:12px;color:#1A56DB;line-height:1.5;margin-top:10px}
+.dinfo{background:#F0FFF4;border-radius:10px;padding:9px 12px;font-size:12px;color:#155724;border:1px solid #B8EAC8;margin-top:10px;line-height:1.6}
+
+/* CALC BUTTON */
+.cbtn{width:100%;padding:15px;background:linear-gradient(135deg,var(--red),var(--dark));color:#fff;border:none;border-radius:15px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:12px;box-shadow:0 5px 18px rgba(200,16,46,.3)}
+.cbtn:active{transform:scale(.98)}
+
+/* RESULT */
+.rcard{background:linear-gradient(145deg,#1A1A2E,#2C1828);border-radius:18px;padding:20px 16px;margin-bottom:12px;display:none}
+.rcard.on{display:block;animation:fadeUp .3s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.rlbl{font-size:11.5px;color:rgba(255,255,255,.6);margin-bottom:2px}
+.ramt{font-size:36px;font-weight:800;color:var(--gold);letter-spacing:-1px}
+.rsub{font-size:11.5px;color:rgba(255,255,255,.5);margin-top:2px}
+.rbody{background:rgba(255,255,255,.08);border-radius:11px;padding:11px 13px;margin-top:12px}
+.rrow{display:flex;justify-content:space-between;font-size:12.5px;color:rgba(255,255,255,.8);padding:4px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.rrow:last-child{border:none;color:var(--gold);font-weight:700}
+.rrow.disc{color:#4CD964}
+
+/* FEATURES */
+.fcard{background:#FFFBF0;border-radius:16px;padding:14px;margin-bottom:12px;border:1.5px solid #FFE0A0;display:none}
+.fcard.on{display:block}
+.fhead{font-size:13px;font-weight:700;color:#9B6E00;margin-bottom:10px}
+.feat{display:flex;gap:8px;font-size:12.5px;padding:5px 0;color:#333;border-bottom:1px solid #FFF0C0}
+.feat:last-child{border:none}
+.fi{color:var(--green);flex-shrink:0}
+
+/* ACTION BUTTONS */
+.arow{display:none;gap:9px;margin-bottom:10px}
+.arow.on{display:flex}
+.wbtn{flex:1;padding:13px;background:#25D366;color:#fff;border:none;border-radius:13px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+.kbtn{flex:1;padding:13px;background:#fff;color:var(--red);border:2px solid var(--red);border-radius:13px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+.act-btn{width:100%;padding:14px;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:10px;display:none;align-items:center;justify-content:center;gap:8px}
+.act-btn.on{display:flex}
+.pdf-btn{background:var(--lr);color:var(--red);border:2px solid var(--red)}
+.save-btn{background:linear-gradient(135deg,#1565C0,#0D47A1);color:#fff;box-shadow:0 4px 14px rgba(21,101,192,.3)}
+
+/* ============ CRM ============ */
+.dash-g{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:13px}
+.dc{background:#fff;border-radius:13px;padding:13px;text-align:center;box-shadow:0 1px 5px rgba(0,0,0,.07)}
+.dn{font-size:28px;font-weight:800}
+.dl{font-size:11px;color:var(--muted);margin-top:3px;font-weight:600}
+.dc.c1 .dn{color:var(--blue)}.dc.c2 .dn{color:#F59E0B}.dc.c3 .dn{color:var(--green)}.dc.c4 .dn{color:var(--red)}
+
+.rbox{background:#FFF3CD;border:1.5px solid #FFCA28;border-radius:13px;padding:13px;margin-bottom:13px;display:none}
+.rbox.on{display:block}
+.rtitle{font-size:13px;font-weight:700;color:#664D00;margin-bottom:9px}
+.ri{background:#fff;border-radius:9px;padding:9px 11px;margin-bottom:7px;border-left:3px solid #F59E0B;cursor:pointer}
+.ri:last-child{margin-bottom:0}
+.rin{font-size:13px;font-weight:700}
+.rim{font-size:11.5px;color:var(--muted);margin-top:2px}
+
+.sbar{display:flex;gap:8px;margin-bottom:11px}
+.sbar input{flex:1;padding:10px 13px;border:1.5px solid var(--border);border-radius:11px;font-size:13px;font-family:inherit}
+.sbar input:focus{outline:none;border-color:var(--red)}
+
+.filt{display:flex;gap:6px;margin-bottom:11px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.filt::-webkit-scrollbar{display:none}
+.fb{flex-shrink:0;padding:7px 13px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--muted)}
+.fb.on{background:var(--red);color:#fff;border-color:var(--red)}
+
+.lc{background:#fff;border-radius:13px;padding:13px;margin-bottom:9px;box-shadow:0 1px 5px rgba(0,0,0,.07);border-left:4px solid var(--border)}
+.lc.pending{border-left-color:#F59E0B}.lc.done{border-left-color:var(--green)}.lc.lost{border-left-color:#888}
+.lt{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.lname{font-size:14px;font-weight:700}
+.lplan{font-size:11px;font-weight:700;padding:2px 8px;border-radius:7px;margin-top:3px;display:inline-block}
+.lplan.yv{background:#FFF0F2;color:var(--red)}.lplan.ff{background:#EEF5FF;color:#1565C0}.lplan.ak{background:#FFF0F8;color:#C2185B}.lplan.sc{background:#FFF8E1;color:#F57F17}.lplan.cc{background:#FFE8E8;color:#B71C1C}
+.sbdg{font-size:11px;font-weight:700;padding:3px 10px;border-radius:10px;flex-shrink:0;white-space:nowrap}
+.sbdg.pending{background:#FFF3CD;color:#856404}.sbdg.done{background:#D4EDDA;color:#155724}.sbdg.lost{background:#E9ECEF;color:#495057}
+.lmeta{font-size:12px;color:var(--muted);margin-top:5px;line-height:1.7}
+.lmeta span{margin-right:8px}
+.lprem{font-size:15px;font-weight:700;color:var(--red);margin-top:5px}
+.lfu{font-size:12px;color:#F59E0B;font-weight:600;margin-top:3px}
+.lnote{font-size:12px;color:#555;background:#F9F7F5;border-radius:8px;padding:6px 9px;margin-top:7px;font-style:italic}
+.la{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap}
+.lab{padding:7px 10px;border-radius:9px;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
+.la-c{background:#E8F5E9;color:#2E7D32}.la-w{background:#DCF8C6;color:#1B5E20}.la-e{background:#EEF5FF;color:#1565C0}.la-pdf{background:var(--lr);color:var(--red)}.la-ok{background:#D4EDDA;color:#155724}.la-lo{background:#E9ECEF;color:#495057}.la-del{background:#F8D7DA;color:#721C24}
+
+.exp-btn{width:100%;padding:12px;background:#fff;color:var(--green);border:2px solid var(--green);border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:7px}
+.no-leads{text-align:center;padding:50px 20px;color:var(--muted)}
+.no-leads div{font-size:48px;margin-bottom:12px}
+
+/* MODAL */
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;display:none;align-items:flex-end;justify-content:center;pointer-events:none}
+.mo.on{display:flex;pointer-events:all}
+.mb{background:#fff;border-radius:22px 22px 0 0;padding:20px 17px 38px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
+.mt{font-size:16px;font-weight:700;margin-bottom:15px;display:flex;justify-content:space-between;align-items:center}
+.mc{background:none;border:none;font-size:24px;cursor:pointer;color:var(--muted);line-height:1}
+.mlbl{font-size:12.5px;font-weight:700;margin-bottom:5px;margin-top:12px;color:#333}
+.mlbl:first-of-type{margin-top:0}
+.minp{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:11px;font-size:14px;font-family:inherit;background:#fff;-webkit-appearance:none}
+.minp:focus{outline:none;border-color:var(--red)}
+.strow{display:flex;gap:8px}
+.stb{flex:1;padding:10px;border-radius:11px;border:2px solid var(--border);background:#fff;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--muted)}
+.stb.on.pend{border-color:#F59E0B;background:#FFF3CD;color:#856404}
+.stb.on.done{border-color:var(--green);background:#D4EDDA;color:#155724}
+.stb.on.lost{border-color:#6B7280;background:#E9ECEF;color:#495057}
+.svbtn{width:100%;padding:15px;background:linear-gradient(135deg,var(--red),var(--dark));color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:16px}
+
+
+/* SHARE MODAL */
+.smo{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:600;display:none;align-items:flex-end;justify-content:center;pointer-events:none}
+.smo.on{display:flex;pointer-events:all}
+.smb{background:#fff;border-radius:22px 22px 0 0;padding:20px 18px 40px;width:100%;max-width:480px}
+.smt{font-size:16px;font-weight:700;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.smc{background:none;border:none;font-size:24px;cursor:pointer;color:#888}
+.share-btns{display:flex;flex-direction:column;gap:10px}
+.sh-btn{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:14px;border:none;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;width:100%;text-align:left}
+.sh-wa{background:#DCF8C6;color:#1B5E20}
+.sh-email{background:#EEF5FF;color:#1565C0}
+.sh-dl{background:#F0FFF4;color:#155724}
+.sh-btn span{font-size:22px}
+.sh-btn small{display:block;font-size:11px;font-weight:400;opacity:.7;margin-top:1px}
+.gen-prog{text-align:center;padding:20px;display:none}
+.gen-prog .sp{width:40px;height:40px;border:4px solid #eee;border-top-color:var(--red);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* RATE UPDATE MODAL */
+.rmo{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:700;display:none;align-items:center;justify-content:center;padding:20px;pointer-events:none}
+.rmo.on{display:flex;pointer-events:all}
+.rmb{background:#fff;border-radius:20px;padding:22px 20px;width:100%;max-width:420px;max-height:90vh;overflow-y:auto}
+.rmt{font-size:16px;font-weight:700;margin-bottom:4px}
+.rmsub{font-size:12px;color:#888;margin-bottom:16px}
+.upload-zone{border:2.5px dashed var(--border);border-radius:14px;padding:28px 20px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:14px}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--red);background:var(--lr)}
+.upload-zone div{font-size:40px;margin-bottom:8px}
+.upload-zone p{font-size:13px;color:#666}
+.upload-zone strong{font-size:14px;color:var(--red)}
+.rate-status{background:#F9F7F5;border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:12.5px;display:none}
+.rate-status.on{display:block}
+.rs-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f0ede8}
+.rs-row:last-child{border:none}
+.rs-key{color:#888}
+.rs-val{font-weight:700;color:var(--red)}
+.rate-history{margin-top:12px}
+.rh-item{background:#fff;border:1px solid var(--border);border-radius:10px;padding:9px 12px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center}
+.rh-name{font-size:13px;font-weight:600}
+.rh-date{font-size:11px;color:#888}
+.rh-act{display:flex;gap:6px}
+.rh-act button{padding:5px 10px;border-radius:8px;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+.rh-use{background:var(--lr);color:var(--red)}
+.rh-del{background:#F8D7DA;color:#721C24}
+.parse-log{background:#1A1A2E;border-radius:10px;padding:12px;font-size:11px;color:#4CD964;font-family:monospace;margin-top:10px;max-height:150px;overflow-y:auto;display:none}
+.parse-log.on{display:block}
+
+/* TOAST */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:rgba(28,28,30,.93);color:#fff;padding:11px 24px;border-radius:24px;font-size:13.5px;font-weight:600;z-index:9999;transition:transform .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;pointer-events:none}
+.toast.on{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-row">
+    <div class="badge">NIA</div>
+    <div>
+      <h1>NIA Premium Calculator</h1>
+      <p>New India Assurance Co. Ltd.</p>
+    </div>
+  </div>
+  <div class="adv-bar" style="display:flex;justify-content:space-between;align-items:center">
+    <span id="adv-bar-txt">👨‍💼 <strong>Devidas Nivrutti Patil</strong> &nbsp;|&nbsp; 📞 9823438787</span>
+    <button onclick="document.getElementById('rate-mo').classList.add('on')" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">⚡ Rates Update</button>
+  </div>
+</div>
+
+<div class="nav">
+  <div class="ntab on" onclick="goTab('yuva',this)"><span>🏥</span>Yuva Bharat</div>
+  <div class="ntab" onclick="goTab('floater',this)"><span>👨‍👩‍👧</span>Floater</div>
+  <div class="ntab" onclick="goTab('asha',this)"><span>🌸</span>Asha Kiran</div>
+  <div class="ntab" onclick="goTab('senior',this)"><span>👴</span>Senior</div>
+  <div class="ntab" onclick="goTab('criti',this)"><span>❤️</span>Criti</div>
+  <div class="ntab" onclick="goTab('mediclaim',this)"><span>🏨</span>Mediclaim</div>
+  <div class="ntab" onclick="goTab('topup',this)"><span>⬆️</span>Top-Up</div>
+  <div class="ntab" onclick="goTab('crm',this)"><span>📋</span>CRM</div>
+  <div class="ntab" onclick="goTab('myprofile',this)"><span>👤</span>Profile</div>
+</div>
+
+<div class="wrap">
+
+<!-- ===== YUVA BHARAT ===== -->
+<div id="sec-yuva" class="sec on">
+  <div class="card">
+    <div class="ch">🏥 Yuva Bharat Health Policy</div>
+    <div class="lbl">Client नाव</div>
+    <input type="text" id="yv-name" placeholder="उदा: Rahul Patil">
+    <div class="lbl">Mobile Number</div>
+    <input type="tel" id="yv-mob" placeholder="10-digit mobile">
+    <div class="lbl" style="margin-top:12px">Zone</div>
+    <div class="ztg">
+      <div class="ztb on" id="yv-z1" onclick="setZ('yv',1)">Zone 1<br><small style="font-size:10px;opacity:.7">Mumbai/Surat/Ahmedabad</small></div>
+      <div class="ztb" id="yv-z2" onclick="setZ('yv',2)">Zone 2<br><small style="font-size:10px;opacity:.7">Rest of India</small></div>
+    </div>
+    <input type="hidden" id="yv-zone" value="1">
+    <div class="lbl" style="margin-top:12px">Plan निवडा</div>
+    <div class="plgrid">
+      <div class="ppill on" id="yv-pB" onclick="setP('yv','B')"><div class="pn">Basic</div><div class="pd">Standard</div></div>
+      <div class="ppill" id="yv-pG" onclick="setP('yv','G')"><div class="pn">Gold</div><div class="pd">Enhanced</div></div>
+      <div class="ppill" id="yv-pP" onclick="setP('yv','P')"><div class="pn">Platinum</div><div class="pd">Premium</div></div>
+    </div>
+    <input type="hidden" id="yv-plan" value="B">
+    <div class="lbl" style="margin-top:12px">Sum Insured</div>
+    <div class="pgrid">
+      <div class="pill" onclick="setSI('yv',500000,this)">₹5 L</div>
+      <div class="pill" onclick="setSI('yv',1000000,this)">₹10 L</div>
+      <div class="pill" onclick="setSI('yv',1500000,this)">₹15 L</div>
+      <div class="pill on" onclick="setSI('yv',2500000,this)">₹25 L</div>
+      <div class="pill" onclick="setSI('yv',5000000,this)">₹50 L</div>
+      <div class="pill" onclick="setSI('yv',7500000,this)">₹75 L</div>
+      <div class="pill" onclick="setSI('yv',10000000,this)">₹1 Cr</div>
+    </div>
+    <input type="hidden" id="yv-si" value="2500000">
+    <div class="lbl" style="margin-top:12px">Payment Mode</div>
+    <div class="pgrid4">
+      <div class="pill on" id="yv-fA" onclick="setFq('yv','A')">Annual</div>
+      <div class="pill" id="yv-fH" onclick="setFq('yv','H')">Half Yr</div>
+      <div class="pill" id="yv-fQ" onclick="setFq('yv','Q')">Quarterly</div>
+      <div class="pill" id="yv-fM" onclick="setFq('yv','M')">Monthly</div>
+    </div>
+    <input type="hidden" id="yv-freq" value="A">
+    <div class="lbl" style="margin-top:12px">Policy Term</div>
+    <div class="pgrid">
+      <div class="pill on" id="yv-t1" onclick="setPT('yv',1)">1 Year</div>
+      <div class="pill" id="yv-t2" onclick="setPT('yv',2)">2 Years<span class="tag">-5%</span></div>
+      <div class="pill" id="yv-t3" onclick="setPT('yv',3)">3 Years<span class="tag">-7%</span></div>
+    </div>
+    <input type="hidden" id="yv-pterm" value="1">
+  </div>
+
+  <!-- MEMBERS -->
+  <div class="card">
+    <div class="ch">👥 Members — DOB टाका</div>
+    <div class="note">💡 प्रत्येक member चे DOB टाका. Premium वेगळे calculate होऊन एकत्र दाखवले जाईल. Floater discount आपोआप लागेल.</div>
+    <div id="yv-members" style="margin-top:12px">
+      <div class="mrow" id="yv-m0">
+        <div class="mrow-top"><span class="mname">👤 Member 1 — Proposer</span></div>
+        <input type="text" class="m-name" id="yv-nm0" placeholder="Proposer नाव (optional)">
+        <div class="m-row2">
+          <div><div class="m-lbl">📅 Date of Birth</div><input type="date" class="m-dob" id="yv-dob0" onchange="mAge('yv',0)"></div>
+          <div><div class="m-lbl">🎂 वय</div><div class="m-age" id="yv-age0" style="padding:9px 12px;background:#F9F7F5;border-radius:10px;font-size:13px;min-height:38px"></div></div>
+        </div>
+      </div>
+    </div>
+    <button class="add-m" onclick="addMem('yv')">+ Member Add करा (Spouse / Child)</button>
+    <div class="dinfo" style="margin-top:10px">Floater Discount: 2 members -5% | 3 members -10% | 4+ members -15%</div>
+  </div>
+
+  <!-- DISCOUNTS -->
+  <div class="dcard">
+    <div class="dtitle">🎁 Discounts / Loadings — लागू असतील ते tick करा</div>
+    <div class="crow" onclick="tChk('yv-d0')"><div class="cbox on" id="yv-d0">✓</div><div class="clbl">Loyalty Discount<small>Existing NIA Policy ≥₹5000</small></div><span class="cpct d">-2.5%</span></div>
+    <div class="crow" onclick="tChk('yv-d1')"><div class="cbox" id="yv-d1"></div><div class="clbl">Normal BMI<small>BMI 18.5 – 32</small></div><span class="cpct d">-2.5%</span></div>
+    <div class="crow" onclick="tChk('yv-d2')"><div class="cbox" id="yv-d2"></div><div class="clbl">Non-Diabetic<small>HbA1c &lt; 6.4</small></div><span class="cpct d">-2.5%</span></div>
+    <div class="crow" onclick="tChk('yv-d3')"><div class="cbox" id="yv-d3"></div><div class="clbl">Non-Hypertensive<small>BP ≤ 120/80</small></div><span class="cpct d">-2.5%</span></div>
+    <div class="crow" onclick="tChk('yv-d4')"><div class="cbox" id="yv-d4"></div><div class="clbl">No Hospitalization (last 3 yrs)</div><span class="cpct d">-2.5%</span></div>
+    <div class="crow" onclick="tChk('yv-d5')"><div class="cbox" id="yv-d5"></div><div class="clbl">High BMI Loading<small>BMI &gt; 32</small></div><span class="cpct l">+2.5%</span></div>
+    <div class="crow" onclick="tChk('yv-d6')"><div class="cbox" id="yv-d6"></div><div class="clbl">Diabetic Loading<small>HbA1c &gt; 6.4</small></div><span class="cpct l">+2.5%</span></div>
+    <div class="crow" onclick="tChk('yv-d7')"><div class="cbox" id="yv-d7"></div><div class="clbl">Hypertensive Loading<small>BP &gt; 139/89</small></div><span class="cpct l">+2.5%</span></div>
+  </div>
+
+  <button class="cbtn" onclick="calcYuva()">🔢 Premium Calculate करा</button>
+
+  <div class="rcard" id="yv-res">
+    <div class="rlbl" id="yv-rlbl">Premium (GST वगळून)</div>
+    <div class="ramt" id="yv-amt">₹0</div>
+    <div class="rsub" id="yv-rsub"></div>
+    <div class="rbody" id="yv-rbody"></div>
+  </div>
+  <div class="fcard" id="yv-fc"><div class="fhead" id="yv-fh"></div><div id="yv-fl"></div></div>
+  <div class="arow" id="yv-ar">
+    <button class="wbtn" onclick="waShare('yv')">📱 WhatsApp</button>
+    <button class="kbtn" onclick="doCopy('yv')">📋 Copy</button>
+  </div>
+  <button class="act-btn pdf-btn" id="yv-pdf" onclick="openShareModal('yv',null)">📄 PDF Quote बनवा</button>
+  <button class="act-btn save-btn" id="yv-save" onclick="saveLeadQuick('yv')">💾 Lead मध्ये Save करा</button>
+</div>
+
+<!-- ===== FAMILY FLOATER ===== -->
+<div id="sec-floater" class="sec">
+  <div class="card">
+    <div class="ch">👨‍👩‍👧 Family Floater Mediclaim</div>
+    <div class="note">ℹ️ एकच SI संपूर्ण कुटुंबासाठी | UIN: NIAHLIP25039V082425 | प्रत्येक member च्या वयाचे rate</div>
+    <div class="lbl">Proposer नाव</div>
+    <input type="text" id="ff-name" placeholder="उदा: Suresh Jadhav">
+    <div class="lbl">Mobile Number</div>
+    <input type="tel" id="ff-mob" placeholder="10-digit mobile">
+    <div class="lbl" style="margin-top:12px">Zone</div>
+    <div class="ztg">
+      <div class="ztb on" id="ff-z1" onclick="setZ('ff',1)">Zone 1<br><small style="font-size:10px;opacity:.7">Mumbai/Surat/Ahmedabad</small></div>
+      <div class="ztb" id="ff-z2" onclick="setZ('ff',2)">Zone 2<br><small style="font-size:10px;opacity:.7">Rest of India</small></div>
+    </div>
+    <input type="hidden" id="ff-zone" value="1">
+    <div class="lbl" style="margin-top:12px">Sum Insured</div>
+    <div class="pgrid">
+      <div class="pill" onclick="setSI('ff',200000,this)">₹2 L</div>
+      <div class="pill" onclick="setSI('ff',300000,this)">₹3 L</div>
+      <div class="pill" onclick="setSI('ff',500000,this)">₹5 L</div>
+      <div class="pill" onclick="setSI('ff',800000,this)">₹8 L</div>
+      <div class="pill on" onclick="setSI('ff',1000000,this)">₹10 L</div>
+      <div class="pill" onclick="setSI('ff',1200000,this)">₹12 L</div>
+      <div class="pill" onclick="setSI('ff',1500000,this)">₹15 L</div>
+    </div>
+    <input type="hidden" id="ff-si" value="1000000">
+  </div>
+  <div class="card">
+    <div class="ch">👥 Members — DOB टाका</div>
+    <div id="ff-members">
+      <div class="mrow" id="ff-m0">
+        <div class="mrow-top"><span class="mname">👨 Member 1 — Proposer</span></div>
+        <input type="text" class="m-name" id="ff-nm0" placeholder="Proposer नाव (optional)">
+        <div class="m-row2">
+          <div><div class="m-lbl">📅 Date of Birth</div><input type="date" class="m-dob" id="ff-dob0" onchange="mAge('ff',0)"></div>
+          <div><div class="m-lbl">🎂 वय</div><div class="m-age" id="ff-age0" style="padding:9px 12px;background:#F9F7F5;border-radius:10px;font-size:13px;min-height:38px"></div></div>
+        </div>
+      </div>
+      <div class="mrow" id="ff-m1">
+        <div class="mrow-top"><span class="mname">👩 Member 2 — Spouse</span></div>
+        <input type="text" class="m-name" id="ff-nm1" placeholder="Spouse नाव (optional)">
+        <div class="m-row2">
+          <div><div class="m-lbl">📅 Date of Birth</div><input type="date" class="m-dob" id="ff-dob1" onchange="mAge('ff',1)"></div>
+          <div><div class="m-lbl">🎂 वय</div><div class="m-age" id="ff-age1" style="padding:9px 12px;background:#F9F7F5;border-radius:10px;font-size:13px;min-height:38px"></div></div>
+        </div>
+      </div>
+    </div>
+    <button class="add-m" onclick="addMem('ff')">+ Child Add करा</button>
+    <div class="dinfo" style="margin-top:10px">Floater Discount: 2 members -5% | 3 members -10% | 4+ members -15%</div>
+  </div>
+  <button class="cbtn" onclick="calcFF()">🔢 Premium Calculate करा</button>
+  <div class="rcard" id="ff-res"><div class="rlbl">Annual Premium (GST वगळून)</div><div class="ramt" id="ff-amt">₹0</div><div class="rsub" id="ff-rsub"></div><div class="rbody" id="ff-rbody"></div></div>
+  <div class="fcard" id="ff-fc"><div class="fhead">📋 Family Floater Benefits</div><div id="ff-fl"></div></div>
+  <div class="arow" id="ff-ar"><button class="wbtn" onclick="waShare('ff')">📱 WhatsApp</button><button class="kbtn" onclick="doCopy('ff')">📋 Copy</button></div>
+  <button class="act-btn pdf-btn" id="ff-pdf" onclick="openShareModal('ff',null)">📄 PDF Quote बनवा</button>
+  <button class="act-btn save-btn" id="ff-save" onclick="saveLeadQuick('ff')">💾 Lead मध्ये Save करा</button>
+</div>
+
+<!-- ===== ASHA KIRAN ===== -->
+<div id="sec-asha" class="sec">
+  <div class="card">
+    <div class="ch">🌸 Asha Kiran Policy</div>
+    <div class="note">⚠️ फक्त मुलगी असलेल्या कुटुंबांसाठी | वय: 0–65 वर्षे</div>
+    <div class="lbl" style="margin-top:12px">Client नाव</div>
+    <input type="text" id="ak-name" placeholder="उदा: Priya Deshmukh">
+    <div class="lbl">Mobile Number</div>
+    <input type="tel" id="ak-mob" placeholder="10-digit mobile">
+    <div class="lbl" style="margin-top:10px">
+      <span>Members</span>
+      <span style="float:right;display:flex;align-items:center;gap:8px">
+        <button onclick="chgMem('ak',-1)" style="width:30px;height:30px;border-radius:50%;border:2px solid var(--red);background:#fff;color:var(--red);font-size:18px;font-weight:700;cursor:pointer;line-height:1">−</button>
+        <span id="ak-mcnt" style="font-size:17px;font-weight:700;min-width:20px;text-align:center">1</span>
+        <button onclick="chgMem('ak',1)" style="width:30px;height:30px;border-radius:50%;border:2px solid var(--red);background:#fff;color:var(--red);font-size:18px;font-weight:700;cursor:pointer;line-height:1">+</button>
+      </span>
+    </div>
+    <div id="ak-members"></div>
+    <div class="lbl" style="margin-top:12px">Zone</div>
+    <div style="display:flex;gap:6px">
+      <div class="ztb on" style="flex:1;padding:9px 4px;border-radius:9px;text-align:center;font-size:11.5px;font-weight:700;cursor:pointer;background:#F5F5F7" id="ak-z1" onclick="akZ(1)">Zone 1</div>
+      <div class="ztb" style="flex:1;padding:9px 4px;border-radius:9px;text-align:center;font-size:11.5px;font-weight:700;cursor:pointer;background:#F5F5F7" id="ak-z2" onclick="akZ(2)">Zone 2</div>
+      <div class="ztb" style="flex:1;padding:9px 4px;border-radius:9px;text-align:center;font-size:11.5px;font-weight:700;cursor:pointer;background:#F5F5F7" id="ak-z3" onclick="akZ(3)">Zone 3</div>
+    </div>
+    <input type="hidden" id="ak-zone" value="1">
+    <div class="lbl" style="margin-top:12px">Sum Insured</div>
+    <div class="pgrid">
+      <div class="pill" onclick="setSI('ak',200000,this)">₹2 L</div>
+      <div class="pill" onclick="setSI('ak',300000,this)">₹3 L</div>
+      <div class="pill on" onclick="setSI('ak',500000,this)">₹5 L</div>
+      <div class="pill" onclick="setSI('ak',800000,this)">₹8 L</div>
+      <div class="pill" onclick="setSI('ak',1000000,this)">₹10 L</div>
+      <div class="pill" onclick="setSI('ak',1200000,this)">₹12 L</div>
+      <div class="pill" onclick="setSI('ak',1500000,this)">₹15 L</div>
+    </div>
+    <input type="hidden" id="ak-si" value="500000">
+  </div>
+  <button class="cbtn" onclick="calcAsha()">🔢 Premium Calculate करा</button>
+  <div class="rcard" id="ak-res"><div class="rlbl">Annual Premium (GST वगळून)</div><div class="ramt" id="ak-amt">₹0</div><div class="rsub" id="ak-rsub"></div><div class="rbody" id="ak-rbody"></div></div>
+  <div class="fcard" id="ak-fc"><div class="fhead">📋 Asha Kiran Benefits</div><div id="ak-fl"></div></div>
+  <div class="arow" id="ak-ar"><button class="wbtn" onclick="waShare('ak')">📱 WhatsApp</button><button class="kbtn" onclick="doCopy('ak')">📋 Copy</button></div>
+  <button class="act-btn pdf-btn" id="ak-pdf" onclick="openShareModal('ak',null)">📄 PDF Quote बनवा</button>
+  <button class="act-btn save-btn" id="ak-save" onclick="saveLeadQuick('ak')">💾 Lead मध्ये Save करा</button>
+</div>
+
+<!-- ===== SENIOR CITIZEN ===== -->
+<div id="sec-senior" class="sec">
+  <div class="card">
+    <div class="ch">👴 Senior Citizen Mediclaim</div>
+    <div class="note">ℹ️ वय 60+ | Co-payment 20%</div>
+    <div class="lbl" style="margin-top:12px">Client नाव</div>
+    <input type="text" id="sc-name" placeholder="उदा: Madhav Deshpande">
+    <div class="lbl">Mobile Number</div>
+    <input type="tel" id="sc-mob" placeholder="10-digit mobile">
+    <div class="lbl" style="margin-top:10px">
+      <span>Members <span style="font-size:11px;color:#888">(60+)</span></span>
+      <span style="float:right;display:flex;align-items:center;gap:8px">
+        <button onclick="chgMem('sc',-1)" style="width:30px;height:30px;border-radius:50%;border:2px solid var(--red);background:#fff;color:var(--red);font-size:18px;font-weight:700;cursor:pointer;line-height:1">−</button>
+        <span id="sc-mcnt" style="font-size:17px;font-weight:700;min-width:20px;text-align:center">1</span>
+        <button onclick="chgMem('sc',1)" style="width:30px;height:30px;border-radius:50%;border:2px solid var(--red);background:#fff;color:var(--red);font-size:18px;font-weight:700;cursor:pointer;line-height:1">+</button>
+      </span>
+    </div>
+    <div id="sc-members"></div>
+    <div class="lbl" style="margin-top:12px">Zone</div>
+    <div class="ztg">
+      <div class="ztb on" id="sc-z1" onclick="setZ('sc',1)">Zone 1</div>
+      <div class="ztb" id="sc-z2" onclick="setZ('sc',2)">Zone 2</div>
+    </div>
+    <input type="hidden" id="sc-zone" value="1">
+    <div class="lbl" style="margin-top:12px">Sum Insured</div>
+    <div class="pgrid">
+      <div class="pill on" onclick="setSI('sc',100000,this)">₹1 L</div>
+      <div class="pill" onclick="setSI('sc',150000,this)">₹1.5 L</div>
+      <div class="pill" onclick="setSI('sc',200000,this)">₹2 L</div>
+      <div class="pill" onclick="setSI('sc',300000,this)">₹3 L</div>
+      <div class="pill" onclick="setSI('sc',500000,this)">₹5 L</div>
+      <div class="pill" onclick="setSI('sc',1000000,this)">₹10 L</div>
+    </div>
+    <input type="hidden" id="sc-si" value="100000">
+    <div style="background:#FFF8E1;border-radius:10px;padding:10px 12px;margin-top:11px;font-size:12px;color:#7B5200;border:1px solid #FFD54F">⚠️ <strong>Co-payment 20%</strong> — Claim च्या 20% Client स्वतः भरतो.</div>
+  </div>
+  <button class="cbtn" onclick="calcSC()">🔢 Premium Calculate करा</button>
+  <div class="rcard" id="sc-res"><div class="rlbl">Annual Premium (GST वगळून)</div><div class="ramt" id="sc-amt">₹0</div><div class="rsub" id="sc-rsub"></div><div class="rbody" id="sc-rbody"></div></div>
+  <div class="fcard" id="sc-fc"><div class="fhead">📋 Senior Citizen Benefits</div><div id="sc-fl"></div></div>
+  <div class="arow" id="sc-ar"><button class="wbtn" onclick="waShare('sc')">📱 WhatsApp</button><button class="kbtn" onclick="doCopy('sc')">📋 Copy</button></div>
+  <button class="act-btn pdf-btn" id="sc-pdf" onclick="openShareModal('sc',null)">📄 PDF Quote बनवा</button>
+  <button class="act-btn save-btn" id="sc-save" onclick="saveLeadQuick('sc')">💾 Lead मध्ये Save करा</button>
+</div>
+
+<!-- ===== CRITI CARE ===== -->
+<div id="sec-criti" class="sec">
+  <div class="card">
+    <div class="ch">❤️ Criti Protect Policy</div>
+    <div class="note">ℹ️ Critical Illness: Lump Sum benefit. वय 18–65 वर्षे.</div>
+    <div class="lbl" style="margin-top:12px">Client नाव</div>
+    <input type="text" id="cc-name" placeholder="उदा: Vijay Kulkarni">
+    <div class="lbl">Mobile Number</div>
+    <input type="tel" id="cc-mob" placeholder="10-digit mobile">
+    <div class="lbl" style="margin-top:10px">
+      <span>Members</span>
+      <span style="float:right;display:flex;align-items:center;gap:8px">
+        <button onclick="chgMem('cc',-1)" style="width:30px;height:30px;border-radius:50%;border:2px solid var(--red);background:#fff;color:var(--red);font-size:18px;font-weight:700;cursor:pointer;line-height:1">−</button>
+        <span id="cc-mcnt" style="font-size:17px;font-weight:700;min-width:20px;text-align:center">1</span>
+        <button onclick="chgMem('cc',1)" style="width:30px;height:30px;border-radius:50%;border:2px solid var(--red);background:#fff;color:var(--red);font-size:18px;font-weight:700;cursor:pointer;line-height:1">+</button>
+      </span>
+    </div>
+    <div id="cc-members"></div>
+    <div class="lbl" style="margin-top:12px">Plan</div>
+    <div class="pgrid4">
+      <div class="pill on" id="cc-p9" onclick="setCCP('9',this)">9 CI</div>
+      <div class="pill" id="cc-p18" onclick="setCCP('18',this)">18 CI</div>
+      <div class="pill" id="cc-p25" onclick="setCCP('25',this)">25 CI</div>
+      <div class="pill" id="cc-p41" onclick="setCCP('41',this)">41 CI</div>
+    </div>
+    <input type="hidden" id="cc-plan" value="9">
+    <div class="lbl" style="margin-top:12px">Benefit Amount</div>
+    <div class="pgrid">
+      <div class="pill" onclick="setSI('cc',500000,this)">₹5 L</div>
+      <div class="pill on" onclick="setSI('cc',1000000,this)">₹10 L</div>
+      <div class="pill" onclick="setSI('cc',1500000,this)">₹15 L</div>
+      <div class="pill" onclick="setSI('cc',2000000,this)">₹20 L</div>
+      <div class="pill" onclick="setSI('cc',2500000,this)">₹25 L</div>
+      <div class="pill" onclick="setSI('cc',5000000,this)">₹50 L</div>
+    </div>
+    <input type="hidden" id="cc-si" value="1000000">
+  </div>
+  <button class="cbtn" onclick="calcCC()">🔢 Premium Calculate करा</button>
+  <div class="rcard" id="cc-res"><div class="rlbl">Annual Premium (GST वगळून — Approximate)</div><div class="ramt" id="cc-amt">₹0</div><div class="rsub" id="cc-rsub"></div><div class="rbody" id="cc-rbody"></div></div>
+  <div class="fcard" id="cc-fc"><div class="fhead">📋 Criti Protect Benefits</div><div id="cc-fl"></div></div>
+  <div class="arow" id="cc-ar"><button class="wbtn" onclick="waShare('cc')">📱 WhatsApp</button><button class="kbtn" onclick="doCopy('cc')">📋 Copy</button></div>
+  <button class="act-btn pdf-btn" id="cc-pdf" onclick="openShareModal('cc',null)">📄 PDF Quote बनवा</button>
+  <button class="act-btn save-btn" id="cc-save" onclick="saveLeadQuick('cc')">💾 Lead मध्ये Save करा</button>
+</div>
+
+
+<!-- ===== MEDICLAIM ===== -->
+<div id="sec-mediclaim" class="sec">
+  <div class="card">
+    <div class="ch">🏨 New India Mediclaim Policy</div>
+    <div class="note">ℹ️ Individual/Family | वय: 18–65 | Lifelong renewal</div>
+    <div class="lbl" style="margin-top:12px">Client नाव</div>
+    <input type="text" id="mc-name" placeholder="उदा: Suresh Patil">
+    <div class="lbl">Mobile Number</div>
+    <input type="tel" id="mc-mob" placeholder="10-digit mobile">
+    <div class="lbl" style="margin-top:10px">
+      <span>Members</span>
+      <span style="float:right;display:flex;align-items:center;gap:8px">
+        <button onclick="chgMem('mc',-1)" style="width:30px;height:30px;border-radius:50%;border:2px solid var(--red);background:#fff;color:var(--red);font-size:18px;font-weight:700;cursor:pointer;line-height:1">−</button>
+        <span id="mc-mcnt" style="font-size:17px;font-weight:700;min-width:20px;text-align:center">1</span>
+        <button onclick="chgMem('mc',1)" style="width:30px;height:30px;border-radius:50%;border:2px solid var(--red);background:#fff;color:var(--red);font-size:18px;font-weight:700;cursor:pointer;line-height:1">+</button>
+      </span>
+    </div>
+    <div id="mc-members"></div>
+    <div class="lbl" style="margin-top:12px">Zone</div>
+    <div class="ztg">
+      <div class="ztb on" id="mc-z1" onclick="setZ('mc',1)">Zone 1</div>
+      <div class="ztb" id="mc-z2" onclick="setZ('mc',2)">Zone 2</div>
+    </div>
+    <input type="hidden" id="mc-zone" value="1">
+    <div class="lbl" style="margin-top:12px">Sum Insured (Per Person)</div>
+    <div class="pgrid" style="grid-template-columns:repeat(4,1fr)">
+      <div class="pill" onclick="setSI('mc',100000,this)">₹1 L</div>
+      <div class="pill" onclick="setSI('mc',200000,this)">₹2 L</div>
+      <div class="pill" onclick="setSI('mc',300000,this)">₹3 L</div>
+      <div class="pill" onclick="setSI('mc',400000,this)">₹4 L</div>
+      <div class="pill on" onclick="setSI('mc',500000,this)">₹5 L</div>
+      <div class="pill" onclick="setSI('mc',600000,this)">₹6 L</div>
+      <div class="pill" onclick="setSI('mc',700000,this)">₹7 L</div>
+      <div class="pill" onclick="setSI('mc',800000,this)">₹8 L</div>
+      <div class="pill" onclick="setSI('mc',1000000,this)">₹10 L</div>
+      <div class="pill" onclick="setSI('mc',1200000,this)">₹12 L</div>
+      <div class="pill" onclick="setSI('mc',1500000,this)">₹15 L</div>
+    </div>
+    <input type="hidden" id="mc-si" value="500000">
+  </div>
+  <button class="cbtn" onclick="calcMC()">🔢 Premium Calculate करा</button>
+  <div class="rcard" id="mc-res"><div class="rlbl">Annual Premium (GST वगळून — Exact)</div><div class="ramt" id="mc-amt">₹0</div><div class="rsub" id="mc-rsub"></div><div class="rbody" id="mc-rbody"></div></div>
+  <div class="fcard" id="mc-fc"><div class="fhead">📋 Mediclaim Benefits</div><div id="mc-fl"></div></div>
+  <div class="arow" id="mc-ar"><button class="wbtn" onclick="waShare('mc')">📱 WhatsApp</button><button class="kbtn" onclick="doCopy('mc')">📋 Copy</button></div>
+  <button class="act-btn pdf-btn" id="mc-pdf" onclick="openShareModal('mc',null)">📄 PDF Quote बनवा</button>
+  <button class="act-btn save-btn" id="mc-save" onclick="saveLeadQuick('mc')">💾 Lead मध्ये Save करा</button>
+</div>
+
+<!-- ===== TOP-UP ===== -->
+<div id="sec-topup" class="sec">
+  <div class="card">
+    <div class="ch">⬆️ New India Top-Up Policy</div>
+    <div class="note">ℹ️ Extra Cover | Existing Insurance नंतर काम करते</div>
+    <div class="lbl" style="margin-top:12px">Client नाव</div>
+    <input type="text" id="tu-name" placeholder="उदा: Anil Deshmukh">
+    <div class="lbl">Mobile Number</div>
+    <input type="tel" id="tu-mob" placeholder="10-digit mobile">
+    <div class="lbl" style="margin-top:10px">
+      <span>Members</span>
+      <span style="float:right;display:flex;align-items:center;gap:8px">
+        <button onclick="chgMem('tu',-1)" style="width:30px;height:30px;border-radius:50%;border:2px solid var(--red);background:#fff;color:var(--red);font-size:18px;font-weight:700;cursor:pointer;line-height:1">−</button>
+        <span id="tu-mcnt" style="font-size:17px;font-weight:700;min-width:20px;text-align:center">1</span>
+        <button onclick="chgMem('tu',1)" style="width:30px;height:30px;border-radius:50%;border:2px solid var(--red);background:#fff;color:var(--red);font-size:18px;font-weight:700;cursor:pointer;line-height:1">+</button>
+      </span>
+    </div>
+    <div id="tu-members"></div>
+    <div class="lbl" style="margin-top:12px">Deductible <span style="font-size:11px;color:#888">(existing cover किती?)</span></div>
+    <div class="dedgrid pgrid">
+      <div class="pill on" onclick="setTUD(500000,this)">₹5 L</div>
+      <div class="pill" onclick="setTUD(800000,this)">₹8 L</div>
+    </div>
+    <input type="hidden" id="tu-ded" value="500000">
+    <div id="tu-si-wrap">
+      <div class="lbl" style="margin-top:12px">Top-Up Sum Insured</div>
+      <div class="pgrid" id="tu-si-pills">
+        <div class="pill on" onclick="setSI('tu',500000,this)">₹5 L</div>
+        <div class="pill" onclick="setSI('tu',1000000,this)">₹10 L</div>
+        <div class="pill" onclick="setSI('tu',1500000,this)">₹15 L</div>
+      </div>
+    </div>
+    <input type="hidden" id="tu-si" value="500000">
+  </div>
+  <button class="cbtn" onclick="calcTU()">🔢 Premium Calculate करा</button>
+  <div class="rcard" id="tu-res"><div class="rlbl">Annual Premium (GST वगळून — Exact)</div><div class="ramt" id="tu-amt">₹0</div><div class="rsub" id="tu-rsub"></div><div class="rbody" id="tu-rbody"></div></div>
+  <div class="fcard" id="tu-fc"><div class="fhead">📋 Top-Up Benefits</div><div id="tu-fl"></div></div>
+  <div class="arow" id="tu-ar"><button class="wbtn" onclick="waShare('tu')">📱 WhatsApp</button><button class="kbtn" onclick="doCopy('tu')">📋 Copy</button></div>
+  <button class="act-btn pdf-btn" id="tu-pdf" onclick="openShareModal('tu',null)">📄 PDF Quote बनवा</button>
+  <button class="act-btn save-btn" id="tu-save" onclick="saveLeadQuick('tu')">💾 Lead मध्ये Save करा</button>
+</div>
+
+<!-- ===== CRM ===== -->
+<div id="sec-crm" class="sec">
+  <div class="dash-g">
+    <div class="dc c1"><div class="dn" id="c-tot">0</div><div class="dl">Total Leads</div></div>
+    <div class="dc c4"><div class="dn" id="c-due">0</div><div class="dl">आजचे Follow-ups</div></div>
+    <div class="dc c2"><div class="dn" id="c-pen">0</div><div class="dl">Pending ⏳</div></div>
+    <div class="dc c3"><div class="dn" id="c-don">0</div><div class="dl">Policy Done ✅</div></div>
+  </div>
+  <div class="rbox" id="rbox"><div class="rtitle">🔔 Follow-up Due आहे!</div><div id="rlist"></div></div>
+  <div class="sbar"><input type="text" id="crm-q" placeholder="🔍 Name / Mobile शोधा..." oninput="renderLeads()"></div>
+  <div class="filt">
+    <button class="fb on" id="fa" onclick="setF('all')">सर्व</button>
+    <button class="fb" id="fp" onclick="setF('pending')">⏳ Pending</button>
+    <button class="fb" id="fd" onclick="setF('done')">✅ Done</button>
+    <button class="fb" id="fl" onclick="setF('lost')">❌ Lost</button>
+    <button class="fb" id="ft" onclick="setF('today')">🔔 Due</button>
+  </div>
+  <div id="crm-list"></div>
+  <button class="exp-btn" onclick="exportCSV()">📊 Excel/CSV Export</button>
+  <button class="cbtn" style="background:linear-gradient(135deg,#1565C0,#0D47A1);box-shadow:0 5px 18px rgba(21,101,192,.3)" onclick="openModal(null,null)">+ नवीन Lead Add करा</button>
+</div>
+
+
+<!-- SHARE MODAL -->
+<div class="smo" id="share-mo">
+  <div class="smb">
+    <div class="smt"><span id="share-ttl">Quote Share करा</span><button class="smc" onclick="closeShare()">✕</button></div>
+    <div class="gen-prog" id="gen-prog">
+      <div class="sp"></div>
+      <p style="font-size:13px;color:#666">PDF तयार होत आहे...</p>
+    </div>
+    <div class="share-btns" id="share-btns">
+      <button class="sh-btn sh-wa" onclick="doShare('wa')">
+        <span>💬</span><div><div>WhatsApp वर पाठवा</div><small>PDF attach होईल</small></div>
+      </button>
+      <button class="sh-btn sh-email" onclick="doShare('email')">
+        <span>✉️</span><div><div>Email वर पाठवा</div><small>PDF attach होईल</small></div>
+      </button>
+      <button class="sh-btn sh-dl" onclick="doShare('download')">
+        <span>⬇️</span><div><div>PDF Download करा</div><small>Phone मध्ये save होईल</small></div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- RATE UPDATE MODAL -->
+<div class="rmo" id="rate-mo">
+  <div class="rmb">
+    <div class="rmt">📥 Rate Table Update करा</div>
+    <div class="rmsub">नवीन NIA rate PDF upload करा — rates automatically update होतील</div>
+    
+    <div class="upload-zone" id="upload-zone" onclick="document.getElementById('rate-file').click()" 
+         ondragover="event.preventDefault();this.classList.add('drag')" 
+         ondragleave="this.classList.remove('drag')"
+         ondrop="handleDrop(event)">
+      <div>📄</div>
+      <strong>PDF / CSV / Excel Upload करा</strong>
+      <p style="margin-top:5px">किंवा Manual Rate Entry करा</p>
+    </div>
+    <input type="file" id="rate-file" accept=".pdf,.csv,.xlsx,.xls,.json" style="display:none" onchange="handleRateFile(event)">
+    
+    <div class="rate-status" id="rate-status"></div>
+    <div class="parse-log" id="parse-log"></div>
+    
+    <div style="background:#FFF3CD;border-radius:10px;padding:12px;font-size:12px;color:#664D00;margin-bottom:12px;border:1px solid #FFCA28">
+      💡 <strong>Supported formats:</strong><br>
+      • <strong>JSON/CSV:</strong> Rate table direct upload (best)<br>
+      • <strong>PDF:</strong> Text extract करून rates parse केले जातात<br>
+      • <strong>Manual:</strong> खाली form मध्ये manually enter करा
+    </div>
+    
+    <details style="margin-bottom:12px">
+      <summary style="font-size:13px;font-weight:700;cursor:pointer;padding:10px 0;color:var(--red)">✏️ Manual Rate Entry (Yuva Bharat)</summary>
+      <div style="margin-top:10px">
+        <p style="font-size:12px;color:#666;margin-bottom:8px">Plan, Zone, Frequency निवडून age-band wise rates enter करा (₹ amounts)</p>
+        <div style="display:flex;gap:6px;margin-bottom:8px">
+          <select id="mr-plan" class="minp" style="flex:1"><option value="B">Basic</option><option value="G">Gold</option><option value="P">Platinum</option></select>
+          <select id="mr-zone" class="minp" style="flex:1"><option value="1">Zone 1</option><option value="2">Zone 2</option></select>
+          <select id="mr-freq" class="minp" style="flex:1"><option value="A">Annual</option><option value="H">Half-Yr</option><option value="Q">Quarterly</option><option value="M">Monthly</option></select>
+        </div>
+        <select id="mr-si" class="minp" style="margin-bottom:8px">
+          <option value="500000">₹5 Lakh</option><option value="1000000">₹10 Lakh</option>
+          <option value="1500000">₹15 Lakh</option><option value="2500000" selected>₹25 Lakh</option>
+          <option value="5000000">₹50 Lakh</option><option value="7500000">₹75 Lakh</option>
+          <option value="10000000">₹1 Crore</option>
+        </select>
+        <p style="font-size:11px;color:#888;margin-bottom:5px">Age bands: 0-17, 18-30, 31-35, 36-40, 41-45, 46-50, 51-55, 56-60, 61-65, 65+</p>
+        <input class="minp" id="mr-rates" placeholder="4279,6094,7370,9301,12238,14652,18887,21318,28870,32648" style="margin-bottom:8px">
+        <button onclick="applyManualRate()" style="width:100%;padding:11px;background:var(--red);color:#fff;border:none;border-radius:11px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">✅ Rate Apply करा</button>
+      </div>
+    </details>
+    
+    <div class="rate-history" id="rate-history"></div>
+    
+    <button onclick="downloadCSVTemplate()" style="width:100%;padding:11px;background:#EEF5FF;color:#1565C0;border:none;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:8px">⬇️ CSV Template Download करा</button>
+    <button onclick="document.getElementById('rate-mo').classList.remove('on')" style="width:100%;padding:12px;background:#F5F5F7;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">बंद करा</button>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+
+<!-- MODAL -->
+<div class="mo" id="lead-mo">
+  <div class="mb">
+    <div class="mt"><span id="mo-ttl">Lead Save करा</span><button class="mc" onclick="closeModal()">✕</button></div>
+    <div class="mlbl">Client नाव *</div>
+    <input class="minp" id="ml-name" placeholder="पूर्ण नाव">
+    <div class="mlbl">Mobile *</div>
+    <input class="minp" id="ml-mob" type="tel" placeholder="10-digit">
+    <div class="mlbl">Email</div>
+    <input class="minp" id="ml-email" type="email" placeholder="email@example.com">
+    <div class="mlbl">Plan</div>
+    <select class="minp" id="ml-plan">
+      <option value="Yuva Bharat Basic">Yuva Bharat — Basic</option>
+      <option value="Yuva Bharat Gold">Yuva Bharat — Gold</option>
+      <option value="Yuva Bharat Platinum">Yuva Bharat — Platinum</option>
+      <option value="Family Floater">Family Floater</option>
+      <option value="Asha Kiran">Asha Kiran</option>
+      <option value="Senior Citizen">Senior Citizen</option>
+      <option value="Criti Protect">Criti Protect</option>
+    </select>
+    <div class="mlbl">Sum Insured</div>
+    <select class="minp" id="ml-si">
+      <option value="2L">₹2 Lakh</option><option value="3L">₹3 Lakh</option>
+      <option value="5L">₹5 Lakh</option><option value="10L" selected>₹10 Lakh</option>
+      <option value="15L">₹15 Lakh</option><option value="25L">₹25 Lakh</option>
+      <option value="50L">₹50 Lakh</option><option value="75L">₹75 Lakh</option>
+      <option value="1 Cr">₹1 Crore</option>
+    </select>
+    <div class="mlbl">Premium Quoted (₹, GST वगळून)</div>
+    <input class="minp" id="ml-prem" type="number" placeholder="उदा: 12573">
+    <div class="mlbl">Status</div>
+    <div class="strow">
+      <button class="stb on pend" id="sb-p" onclick="setSt('pending')">⏳ Pending</button>
+      <button class="stb done" id="sb-d" onclick="setSt('done')">✅ Done</button>
+      <button class="stb lost" id="sb-l" onclick="setSt('lost')">❌ Lost</button>
+    </div>
+    <input type="hidden" id="ml-st" value="pending">
+    <div class="mlbl">Follow-up Date</div>
+    <input class="minp" id="ml-fu" type="date">
+    <div class="mlbl">Notes</div>
+    <textarea class="minp" id="ml-note" rows="3" placeholder="Client बद्दल नोट्स, concerns..."></textarea>
+    <input type="hidden" id="ml-id" value="">
+    <input type="hidden" id="ml-qd" value="">
+    <button class="svbtn" onclick="saveLead()">💾 Lead Save करा</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const YB = {
+  B: { // BASIC
+    1: { // ZONE 1
+      A: {
+        500000:   [4279,6094,7370,9301,12238,14652,18887,21318,28870,32648],
+        1000000:  [5247,7486,9070,11457,15081,18062,23298,26301,35629,40299],
+        1500000:  [6529,9334,11314,14306,18843,22578,29134,32890,44578,50424],
+        2500000:  [8773,12573,15252,19294,25438,30492,39358,44446,60253,68162],
+        5000000:  [12194,17501,21247,26895,35486,42548,54940,62046,84145,95194],
+        7500000:  [13789,19800,24041,30437,40167,48164,62194,70246,95271,107789],
+        10000000: [14916,21428,26026,32951,43489,52146,67348,76065,103169,116727]
+      },
+      H: {
+        500000:   [2222,3162,3823,4824,6345,7596,9790,11050,14962,16920],
+        1000000:  [2723,3883,4704,5941,7818,9363,12076,13632,18464,20884],
+        1500000:  [3387,4841,5867,7417,9768,11702,15099,17045,23101,26130],
+        2500000:  [4550,6519,7907,10001,13184,15803,20396,23032,31222,35319],
+        5000000:  [6322,9072,11013,13939,18390,22049,28469,32151,43600,49325],
+        7500000:  [7149,10263,12460,15774,20815,24959,32228,36399,49365,55850],
+        10000000: [7733,11107,13489,17077,22536,27022,34898,39414,53457,60481]
+      },
+      Q: {
+        500000:   [1135,1614,1951,2460,3236,3873,4991,5633,7627,8624],
+        1000000:  [1390,1981,2399,3030,3986,4773,6156,6948,9411,10644],
+        1500000:  [1729,2469,2992,3782,4980,5965,7696,8688,11773,13317],
+        2500000:  [2321,3324,4031,5099,6721,8055,10396,11739,15912,18000],
+        5000000:  [3224,4625,5614,7105,9373,11238,14509,16385,22219,25136],
+        7500000:  [3645,5232,6352,8040,10609,12720,16424,18550,25157,28461],
+        10000000: [3943,5662,6876,8704,11486,13771,17785,20086,27242,30821]
+      },
+      M: {
+        500000:   [391,553,667,839,1100,1315,1693,1909,2582,2919],
+        1000000:  [478,677,818,1031,1354,1619,2086,2353,3185,3601],
+        1500000:  [592,842,1018,1285,1689,2022,2606,2940,3982,4503],
+        2500000:  [792,1130,1369,1729,2276,2727,3517,3970,5378,6083],
+        5000000:  [1096,1569,1903,2406,3172,3801,4905,5538,7507,8492],
+        7500000:  [1239,1774,2152,2722,3589,4301,5551,6269,8499,9614],
+        10000000: [1339,1919,2329,2946,3885,4656,6011,6787,9202,10410]
+      }
+    },
+    2: { // ZONE 2
+      A: {
+        500000:   [3501,4986,6030,7610,10013,11988,15453,17442,23621,26712],
+        1000000:  [4293,6125,7421,9374,12339,14778,19062,21519,29151,32972],
+        1500000:  [5342,7637,9257,11705,15417,18473,23837,26910,36473,41256],
+        2500000:  [7178,10287,12479,15786,20813,24948,32202,36365,49298,55769],
+        5000000:  [9977,14319,17384,22005,29034,34812,44951,50765,68846,77886],
+        7500000:  [11282,16200,19670,24903,32864,39407,50886,57474,77949,88191],
+        10000000: [12204,17532,21294,26960,35582,42665,55103,62235,84411,95504]
+      },
+      H: {
+        500000:   [1819,2588,3129,3947,5192,6216,8011,9042,12243,13844],
+        1000000:  [2229,3178,3850,4861,6398,7661,9881,11154,15108,17088],
+        1500000:  [2772,3961,4801,6069,7993,9576,12355,13947,18901,21380],
+        2500000:  [3724,5335,6470,8184,10788,12931,16689,18845,25546,28899],
+        5000000:  [5174,7424,9011,11406,15048,18041,23294,26306,35674,40358],
+        7500000:  [5850,8398,10196,12907,17032,20422,26369,29782,40390,45697],
+        10000000: [6328,9088,11037,13973,18440,22109,28554,32249,43738,49485]
+      },
+      Q: {
+        500000:   [929,1321,1597,2014,2648,3170,4085,4610,6241,7057],
+        1000000:  [1138,1622,1964,2480,3262,3906,5037,5686,7701,8709],
+        1500000:  [1415,2021,2449,3095,4075,4882,6298,7109,9634,10897],
+        2500000:  [1900,2721,3299,4173,5500,6591,8506,9605,13020,14728],
+        5000000:  [2639,3785,4594,5814,7670,9195,11872,13407,18180,20567],
+        7500000:  [2983,4282,5198,6579,8681,10408,13439,15178,20584,23287],
+        10000000: [3227,4633,5627,7122,9399,11268,14552,16435,22290,25218]
+      },
+      M: {
+        500000:   [322,454,547,687,901,1077,1385,1562,2112,2387],
+        1000000:  [392,555,670,844,1108,1325,1707,1925,2604,2944],
+        1500000:  [485,690,834,1052,1382,1654,2131,2405,3256,3682],
+        2500000:  [649,926,1121,1415,1862,2230,2876,3246,4397,4973],
+        5000000:  [898,1284,1557,1968,2594,3108,4011,4528,6137,6942],
+        7500000:  [1014,1452,1761,2226,2935,3517,4539,5125,6947,7859],
+        10000000: [1096,1570,1905,2409,3177,3807,4914,5549,7523,8510]
+      }
+    }
+  },
+  G: { // GOLD
+    1: {
+      A: {
+        500000:   [5038,7161,8465,10445,14256,16550,20895,23067,30817,34672],
+        1000000:  [5984,8767,10384,12832,17281,20130,25498,28232,37796,42554],
+        1500000:  [7310,10929,12947,16011,21401,24987,31702,35151,47130,53092],
+        2500000:  [9933,15092,17815,21945,29359,34161,43241,47823,64020,72083],
+        5000000:  [13937,21725,25526,31279,41800,48389,61067,67293,89925,101189],
+        7500000:  [15763,24580,28881,35398,47311,54775,69130,76186,101816,114582],
+        10000000: [17050,26604,31262,38319,51227,59307,74855,82500,110253,124080]
+      },
+      H: {
+        500000:   [2615,3715,4390,5416,7391,8579,10830,11956,15971,17969],
+        1000000:  [3105,4547,5385,6653,8958,10434,13216,14632,19587,22052],
+        1500000:  [3792,5667,6713,8300,11093,12951,16430,18216,24423,27512],
+        2500000:  [5151,7824,9235,11375,15216,17704,22408,24782,33174,37351],
+        5000000:  [7226,11261,13230,16210,21662,25075,31644,34869,46595,52431],
+        7500000:  [8172,12740,14968,18345,24517,28384,35821,39477,52756,59370],
+        10000000: [8839,13788,16202,19858,26546,30732,38787,42748,57127,64291]
+      },
+      Q: {
+        500000:   [1335,1896,2240,2762,3769,4374,5521,6095,8141,9158],
+        1000000:  [1585,2319,2746,3393,4567,5319,6736,7458,9983,11239],
+        1500000:  [1935,2890,3423,4232,5655,6601,8374,9285,12447,14021],
+        2500000:  [2627,3989,4708,5798,7756,9023,11421,12630,16906,19035],
+        5000000:  [3684,5740,6744,8263,11040,12780,16127,17770,23745,26719],
+        7500000:  [4166,6494,7629,9350,12495,14465,18255,20118,26884,30255],
+        10000000: [4506,7028,8258,10121,13529,15662,19767,21785,29112,32762]
+      },
+      M: {
+        500000:   [459,648,764,941,1280,1485,1872,2065,2756,3099],
+        1000000:  [543,791,935,1153,1550,1804,2282,2525,3378,3802],
+        1500000:  [661,984,1164,1437,1917,2236,2835,3142,4209,4740],
+        2500000:  [895,1355,1597,1965,2626,3054,3863,4271,5714,6433],
+        5000000:  [1252,1946,2284,2797,3734,4321,5451,6006,8022,9026],
+        7500000:  [1414,2200,2583,3164,4225,4890,6169,6798,9082,10219],
+        10000000: [1529,2380,2795,3424,4574,5294,6680,7361,9834,11066]
+      }
+    },
+    2: {
+      A: {
+        500000:   [4122,5859,6926,8546,11664,13541,17096,18873,25214,28368],
+        1000000:  [4896,7173,8496,10499,14139,16470,20862,23099,30924,34817],
+        1500000:  [5981,8942,10593,13100,17510,20444,25938,28760,38561,43439],
+        2500000:  [8127,12348,14576,17955,24021,27950,35379,39128,52380,58977],
+        5000000:  [11403,17775,20885,25592,34200,39591,49964,55058,73575,82791],
+        7500000:  [12897,20111,23630,28962,38709,44816,56561,62334,83304,93749],
+        10000000: [13950,21767,25578,31352,41913,48524,61245,67500,90207,101520]
+      },
+      H: {
+        500000:   [2141,3041,3593,4432,6048,7020,8862,9783,13068,14702],
+        1000000:  [2542,3721,4407,5444,7330,8538,10814,11972,16027,18043],
+        1500000:  [3103,4638,5493,6792,9077,10597,13443,14905,19983,22510],
+        2500000:  [4216,6402,7557,9307,12450,14486,18335,20277,27143,30561],
+        5000000:  [5913,9214,10825,13264,17724,20517,25891,28530,38124,42899],
+        7500000:  [6687,10424,12247,15010,20060,23224,29309,32300,43165,48576],
+        10000000: [7232,11282,13257,16248,21720,25145,31736,34977,46741,52603]
+      },
+      Q: {
+        500000:   [1093,1552,1833,2261,3084,3580,4518,4987,6661,7494],
+        1000000:  [1298,1899,2248,2777,3738,4353,5513,6103,8169,9197],
+        1500000:  [1584,2366,2802,3463,4628,5402,6853,7598,10185,11473],
+        2500000:  [2151,3265,3853,4745,6347,7384,9345,10335,13833,15575],
+        5000000:  [3015,4698,5519,6761,9034,10457,13195,14540,19429,21862],
+        7500000:  [3410,5314,6243,7651,10224,11836,14937,16461,21997,24755],
+        10000000: [3688,5751,6758,8282,11070,12815,16174,17825,23820,26806]
+      },
+      M: {
+        500000:   [377,532,627,771,1049,1216,1533,1692,2257,2538],
+        1000000:  [446,649,767,945,1270,1477,1869,2068,2765,3112],
+        1500000:  [543,807,954,1177,1570,1832,2321,2572,3446,3880],
+        2500000:  [734,1110,1309,1610,2150,2500,3162,3496,4677,5265],
+        5000000:  [1026,1594,1871,2290,3057,3538,4462,4916,6566,7387],
+        7500000:  [1159,1802,2115,2591,3459,4003,5050,5564,7432,8363],
+        10000000: [1253,1949,2289,2803,3744,4333,5467,6024,8047,9055]
+      }
+    }
+  },
+  P: { // PLATINUM
+    1: {
+      A: {
+        500000:   [5137,9284,10577,12546,16352,18398,22737,24508,32252,36108],
+        1000000:  [6072,10736,12342,14773,19212,21830,27192,29552,39116,43874],
+        1500000:  [7403,12931,14927,17980,23353,26708,33413,36482,48461,54423],
+        2500000:  [10060,17298,19998,24112,31504,36047,45122,49286,65478,73541],
+        5000000:  [14080,24030,27803,33534,44033,50353,63019,68811,91438,102702],
+        7500000:  [15923,27181,31455,37950,49836,56997,71341,77908,103532,116292],
+        10000000: [17226,29420,34051,41080,53961,61710,77248,84359,112107,125934]
+      },
+      H: {
+        500000:   [2666,4815,5485,6505,8477,9537,11785,12703,16715,18712],
+        1000000:  [3151,5567,6399,7659,9958,11315,14093,15316,20271,22736],
+        1500000:  [3840,6704,7739,9320,12104,13842,17316,18906,25112,28201],
+        2500000:  [5217,8967,10366,12497,16327,18681,23383,25540,33929,38106],
+        5000000:  [7300,12455,14409,17379,22818,26093,32655,35656,47379,53215],
+        7500000:  [8254,14087,16302,19667,25825,29535,36967,40369,53645,60256],
+        10000000: [8930,15247,17647,21288,27962,31977,40027,43711,58087,65251]
+      },
+      Q: {
+        500000:   [1361,2456,2797,3317,4322,4862,6008,6475,8520,9537],
+        1000000:  [1608,2839,3263,3905,5077,5768,7184,7807,10332,11588],
+        1500000:  [1959,3419,3946,4752,6170,7056,8826,9636,12799,14373],
+        2500000:  [2661,4572,5284,6371,8322,9521,11917,13016,17291,19420],
+        5000000:  [3722,6349,7345,8858,11630,13298,16642,18171,24145,27118],
+        7500000:  [4209,7181,8309,10024,13162,15052,18839,20573,27337,30706],
+        10000000: [4553,7772,8994,10850,14251,16296,20398,22276,29601,33251]
+      },
+      M: {
+        500000:   [468,837,952,1128,1467,1649,2036,2194,2884,3227],
+        1000000:  [551,967,1110,1326,1722,1955,2433,2643,3495,3919],
+        1500000:  [670,1162,1340,1612,2091,2390,2987,3261,4328,4859],
+        2500000:  [906,1551,1792,2158,2817,3222,4030,4401,5844,6562],
+        5000000:  [1265,2151,2487,2998,3933,4496,5625,6141,8157,9161],
+        7500000:  [1429,2432,2813,3391,4450,5088,6366,6952,9235,10372],
+        10000000: [1545,2631,3044,3670,4818,5508,6893,7526,9999,11231]
+      }
+    },
+    2: {
+      A: {
+        500000:   [4203,7596,8654,10265,13379,15053,18603,20052,26388,29543],
+        1000000:  [4968,8784,10098,12087,15719,17861,22248,24179,32004,35897],
+        1500000:  [6057,10580,12213,14711,19107,21852,27338,29849,39650,44528],
+        2500000:  [8231,14153,16362,19728,25776,29493,36918,40325,53573,60170],
+        5000000:  [11520,19661,22748,27437,36027,41198,51561,56300,74813,84029],
+        7500000:  [13028,22239,25736,31050,40775,46634,58370,63743,84708,95148],
+        10000000: [14094,24071,27860,33611,44150,50490,63203,69021,91724,103037]
+      },
+      H: {
+        500000:   [2183,3940,4488,5323,6936,7804,9643,10394,13677,15311],
+        1000000:  [2579,4556,5237,6267,8149,9259,11532,12532,16586,18603],
+        1500000:  [3143,5486,6333,7627,9904,11327,14169,15470,20547,23075],
+        2500000:  [4269,7337,8482,10226,13360,15285,19132,20897,27761,31179],
+        5000000:  [5974,10191,11790,14220,18671,21349,26719,29174,38765,43540],
+        7500000:  [6755,11527,13339,16092,21130,24166,30246,33030,43892,49301],
+        10000000: [7307,12476,14439,17419,22879,26164,32750,35765,47527,53388]
+      },
+      Q: {
+        500000:   [1115,2010,2290,2715,3537,3979,4916,5299,6971,7804],
+        1000000:  [1317,2324,2671,3196,4155,4720,5878,6388,8454,9482],
+        1500000:  [1604,2798,3229,3889,5049,5774,7222,7885,10472,11760],
+        2500000:  [2178,3741,4325,5213,6810,7791,9751,10651,14148,15890],
+        5000000:  [3046,5195,6010,7248,9516,10881,13617,14868,19756,22189],
+        7500000:  [3444,5876,6799,8202,10769,12316,15415,16833,22368,25124],
+        10000000: [3726,6360,7360,8878,11660,13334,16690,18227,24220,27207]
+      },
+      M: {
+        500000:   [379,682,776,920,1197,1346,1663,1792,2356,2637],
+        1000000:  [448,788,905,1082,1406,1596,1987,2159,2857,3203],
+        1500000:  [545,948,1093,1316,1707,1952,2441,2665,3538,3972],
+        2500000:  [738,1266,1463,1763,2302,2633,3294,3598,4778,5366],
+        5000000:  [1031,1757,2032,2450,3215,3676,4599,5021,6671,7492],
+        7500000:  [1166,1986,2298,2772,3638,4160,5206,5684,7552,8483],
+        10000000: [1261,2150,2487,3000,3939,4504,5636,6155,8178,9186]
+      }
+    }
+  }
+};
+
+const AK_PRIMARY = {
+  1: {
+    200000:  [2930,3986,4742,5813,7545,9215,12869,15750,26555],
+    300000:  [4087,5396,6086,7424,9643,11775,17111,20903,35339],
+    500000:  [5829,7917,8914,10907,12667,15479,23287,28474,48348],
+    800000:  [7157,9715,10950,13394,15562,19001,28590,35507,59359],
+    1000000: [8170,11096,12493,15286,17753,21694,32637,39645,67316],
+    1200000: [8882,12063,13582,16618,19300,23585,35481,43040,73082],
+    1500000: [10069,13675,15397,18840,21880,26737,40223,48705,82700]
+  },
+  2: {
+    200000:  [2663,3623,4316,5277,6852,8379,11703,14318,24146],
+    300000:  [3720,4910,5527,6748,8761,10702,15553,19008,32120],
+    500000:  [5296,7194,8108,9910,11521,14074,21172,25880,43953],
+    800000:  [6502,8833,9954,12172,14150,17275,25994,32281,53966],
+    1000000: [7423,10083,11364,13889,16146,19725,29673,36034,61196],
+    1200000: [8069,10961,12354,15099,17553,21443,32258,39120,66438],
+    1500000: [9148,12426,14005,17117,19899,24310,36570,44269,75182]
+  },
+  3: {
+    200000:  [2394,3261,3891,4757,6174,7545,10538,12884,21735],
+    300000:  [3352,4425,4969,6072,7879,9629,13994,17111,28916],
+    500000:  [4765,6470,7303,8914,10374,12667,19055,23287,39558],
+    800000:  [5846,7951,8959,10962,12739,15548,23399,29056,48574],
+    1000000: [6678,9068,10236,12493,14539,17753,26707,32423,55077],
+    1200000: [7259,9858,11128,13582,15806,19300,29034,35200,59794],
+    1500000: [8230,11176,12615,15397,17919,21880,32914,39833,67664]
+  }
+};
+
+const SC_EXACT = {
+  1: {
+    100000: [4447,4909,5429,5949,6543,7138],
+    150000: [6607,7289,8062,8836,9720,10603]
+  },
+  2: {
+    100000: [5248,5793,6405,7019,7721,8423],
+    150000: [7796,8601,9513,10427,11469,12511]
+  }
+};
+
+const SC_APPROX = {
+  1: {
+    200000:  [8200,9050,10010,10970,12067,13164],
+    300000:  [11500,12690,14030,15370,16900,18430],
+    500000:  [17000,18760,20750,22740,25010,27280],
+    1000000: [27000,29800,32960,36120,39730,43340]
+  },
+  2: {
+    200000:  [9700,10710,11840,12980,14278,15576],
+    300000:  [13600,15010,16600,18200,20020,21840],
+    500000:  [20100,22180,24530,26880,29570,32260],
+    1000000: [31900,35200,38940,42680,46950,51220]
+  }
+};
+
+
+// ============ AK rates (exact NIA Oct 2024) ============
+// Zone 1,2,3 x SI x age-band [0-20,21-30,31-35,36-40,41-45,46-50,51-55,56-60,61-65]
+const AK={
+  1:{200000:[2930,3986,4742,5813,7545,9215,12869,15750,26555],300000:[4087,5396,6086,7424,9643,11775,17111,20903,35339],500000:[5829,7917,8914,10907,12667,15479,23287,28474,48348],800000:[7157,9715,10950,13394,15562,19001,28590,35507,59359],1000000:[8170,11096,12493,15286,17753,21694,32637,39645,67316],1200000:[8882,12063,13582,16618,19300,23585,35481,43040,73082],1500000:[10069,13675,15397,18840,21880,26737,40223,48705,82700]},
+  2:{200000:[2663,3623,4316,5277,6852,8379,11703,14318,24146],300000:[3720,4910,5527,6748,8761,10702,15553,19008,32120],500000:[5296,7194,8108,9910,11521,14074,21172,25880,43953],800000:[6502,8833,9954,12172,14150,17275,25994,32281,53966],1000000:[7423,10083,11364,13889,16146,19725,29673,36034,61196],1200000:[8069,10961,12354,15099,17553,21443,32258,39120,66438],1500000:[9148,12426,14005,17117,19899,24310,36570,44269,75182]},
+  3:{200000:[2394,3261,3891,4757,6174,7545,10538,12884,21735],300000:[3352,4425,4969,6072,7879,9629,13994,17111,28916],500000:[4765,6470,7303,8914,10374,12667,19055,23287,39558],800000:[5846,7951,8959,10962,12739,15548,23399,29056,48574],1000000:[6678,9068,10236,12493,14539,17753,26707,32423,55077],1200000:[7259,9858,11128,13582,15806,19300,29034,35200,59794],1500000:[8230,11176,12615,15397,17919,21880,32914,39833,67664]}
+};
+// SC exact bands: 60-65,66-70,71-75,76-80,81-85,86+
+const SC_E={1:{100000:[4447,4909,5429,5949,6543,7138],150000:[6607,7289,8062,8836,9720,10603]},2:{100000:[5248,5793,6405,7019,7721,8423],150000:[7796,8601,9513,10427,11469,12511]}};
+const SC_A={1:{200000:[8200,9050,10010,10970,12067,13164],300000:[11500,12690,14030,15370,16900,18430],500000:[17000,18760,20750,22740,25010,27280],1000000:[27000,29800,32960,36120,39730,43340]},2:{200000:[9700,10710,11840,12980,14278,15576],300000:[13600,15010,16600,18200,20020,21840],500000:[20100,22180,24530,26880,29570,32260],1000000:[31900,35200,38940,42680,46950,51220]}};
+const SC_BANDS=['60-65','66-70','71-75','76-80','81-85','86+'];
+// CC approximate per 10L
+const CC_BASE={9:[800,1100,1400,2000,2900,4200,6000,8500],18:[1000,1400,1800,2600,3800,5400,7700,11000],25:[1200,1700,2200,3100,4500,6400,9200,13000],41:[1500,2100,2700,3800,5500,7800,11200,16000]};
+
+const AGE_L=['0-17','18-30','31-35','36-40','41-45','46-50','51-55','56-60','61-65','>65'];
+
+// ============ HELPERS ============
+function getAge(dob){if(!dob)return null;const d=new Date(dob),t=new Date();let a=t.getFullYear()-d.getFullYear();if(t.getMonth()<d.getMonth()||(t.getMonth()===d.getMonth()&&t.getDate()<d.getDate()))a--;return a<0?0:a;}
+function showAge(dobId,tagId){const a=getAge(document.getElementById(dobId).value);if(a!==null)document.getElementById(tagId).textContent=a+' वर्षे';}
+function fmt(n){return'₹'+Math.round(n).toLocaleString('en-IN');}
+function fmtL(n){if(n>=10000000)return(n/10000000).toFixed(0)+' Cr';return n%100000===0?(n/100000).toFixed(0)+' L':(n/100000).toFixed(1)+' L';}
+function ageBand(a){if(a<=17)return 0;if(a<=30)return 1;if(a<=35)return 2;if(a<=40)return 3;if(a<=45)return 4;if(a<=50)return 5;if(a<=55)return 6;if(a<=60)return 7;if(a<=65)return 8;return 9;}
+function akBand(a){if(a<=20)return 0;if(a<=30)return 1;if(a<=35)return 2;if(a<=40)return 3;if(a<=45)return 4;if(a<=50)return 5;if(a<=55)return 6;if(a<=60)return 7;return 8;}
+function scBand(a){if(a<=65)return 0;if(a<=70)return 1;if(a<=75)return 2;if(a<=80)return 3;if(a<=85)return 4;return 5;}
+function ccBand(a){if(a<=30)return 0;if(a<=35)return 1;if(a<=40)return 2;if(a<=45)return 3;if(a<=50)return 4;if(a<=55)return 5;if(a<=60)return 6;return 7;}
+function tdDisc(pt){return pt===2?0.05:pt===3?0.07:0;}
+function todayStr(){return new Date().toISOString().slice(0,10);}
+function fmtDate(s){if(!s)return'';return new Date(s).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});}
+function isPastToday(s){return s&&s<=todayStr();}
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),2500);}
+function bdR(rows){return rows.map(r=>`<div class="rrow ${r.c||''}"><span>${r.l}</span><span>${r.neg?'-':''}${fmt(Math.abs(r.v))}</span></div>`).join('');}
+function showFt(id,arr){document.getElementById(id).innerHTML=arr.map(f=>`<div class="feat"><span class="fi">✅</span><span>${f}</span></div>`).join('');}
+
+function setSI(p,v,el){document.querySelectorAll('#sec-'+mapSec(p)+' .pgrid .pill, #sec-'+mapSec(p)+' .pgrid .pill').forEach(x=>x.classList.remove('on'));el.classList.add('on');document.getElementById(p+'-si').value=v;}
+function mapSec(p){return{yv:'yuva',ff:'floater',ak:'asha',sc:'senior',cc:'criti'}[p]||p;}
+function setTUD(v,el){
+  document.querySelectorAll('#sec-topup .dedgrid .pill').forEach(x=>x.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('tu-ded').value=v;
+  const siPills=document.getElementById('tu-si-pills');
+  if(!siPills)return;
+  const siMap={
+    500000:[{v:500000,l:'₹5 L'},{v:1000000,l:'₹10 L'},{v:1500000,l:'₹15 L'}],
+    800000:[{v:700000,l:'₹7 L'},{v:1200000,l:'₹12 L'},{v:1700000,l:'₹17 L'},{v:2200000,l:'₹22 L'}]
+  };
+  const opts=siMap[v]||siMap[500000];
+  siPills.innerHTML=opts.map((o,i)=>`<div class="pill${i===0?' on':''}" onclick="setSI('tu',${o.v},this)">${o.l}</div>`).join('');
+  document.getElementById('tu-si').value=opts[0].v;
+}
+function setZ(p,z){[1,2].forEach(i=>document.getElementById(p+'-z'+i).classList.toggle('on',i===z));document.getElementById(p+'-zone').value=z;}
+function akZ(z){[1,2,3].forEach(i=>document.getElementById('ak-z'+i).classList.toggle('on',i===z));document.getElementById('ak-zone').value=z;}
+function setP(p,v){['B','G','P'].forEach(x=>document.getElementById(p+'-p'+x).classList.remove('on'));document.getElementById(p+'-p'+v).classList.add('on');document.getElementById(p+'-plan').value=v;}
+function setFq(p,f){['A','H','Q','M'].forEach(x=>document.getElementById(p+'-f'+x).classList.remove('on'));document.getElementById(p+'-f'+f).classList.add('on');document.getElementById(p+'-freq').value=f;}
+function setPT(p,t){[1,2,3].forEach(x=>document.getElementById(p+'-t'+x).classList.remove('on'));document.getElementById(p+'-t'+t).classList.add('on');document.getElementById(p+'-pterm').value=t;}
+function setCCP(v,el){['9','18','25','41'].forEach(x=>document.getElementById('cc-p'+x).classList.remove('on'));el.classList.add('on');document.getElementById('cc-plan').value=v;}
+function tChk(id){const el=document.getElementById(id);el.classList.toggle('on');el.textContent=el.classList.contains('on')?'✓':'';}
+
+function goTab(id,el){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('sec-'+id).classList.add('on');
+  el.classList.add('on');
+  if(id==='crm'){renderLeads();updDash();}
+}
+
+function showResult(pfx,amt,bodyHtml,feats,sub){
+  const rc=document.getElementById(pfx+'-res');
+  rc.classList.add('on');
+  document.getElementById(pfx+'-amt').textContent=fmt(amt);
+  if(sub)document.getElementById(pfx+'-rsub').textContent=sub;
+  document.getElementById(pfx+'-rbody').innerHTML=bodyHtml;
+  const fc=document.getElementById(pfx+'-fc');fc.classList.add('on');
+  showFt(pfx+'-fl',feats);
+  document.getElementById(pfx+'-ar').classList.add('on');
+  document.getElementById(pfx+'-pdf').classList.add('on');
+  document.getElementById(pfx+'-save').classList.add('on');
+  setTimeout(()=>rc.scrollIntoView({behavior:'smooth',block:'nearest'}),100);
+}
+
+// ============ MEMBER SYSTEM ============
+const memCount={yv:1,ff:2,ak:0,sc:0,cc:0,mc:0,tu:0};
+const memIcons={yv:['👩','👦','👧','👦','👧','👤'],ff:['👨','👩','👦','👧','👦','👧'],
+  ak:['👤','👩','👧','👧','👧','👤'],sc:['👴','👵','👴','👵','👤','👤'],
+  cc:['👤','👩','👦','👧','👦','👧'],mc:['👤','👩','👦','👧','👦','👧'],tu:['👤','👩','👦','👧','👦','👧']};
+const memLabels={yv:['Spouse','Child 1','Child 2','Child 3','Child 4','Member'],
+  ff:['Spouse','Child 1','Child 2','Child 3','Child 4','Member'],
+  ak:['Self/Proposer','Spouse/Daughter','Daughter 2','Daughter 3','Daughter 4','Member'],
+  sc:['Self (60+)','Spouse (60+)','Member 3','Member 4','Member 5','Member'],
+  cc:['Self','Spouse','Child 1','Child 2','Child 3','Member'],
+  mc:['Self','Spouse','Child 1','Child 2','Child 3','Member'],
+  tu:['Self','Spouse','Child 1','Child 2','Child 3','Member']};
+
+function chgMem(p,d){
+  const maxM=(p==='sc')?4:6;
+  if(d>0){
+    if(memCount[p]>=maxM)return showToast('Maximum '+maxM+' members');
+    addMem(p);
+  } else {
+    if(memCount[p]<=1)return showToast('⚠️ कमीत कमी 1 member हवा');
+    const last=memCount[p]-1;
+    const row=document.getElementById(p+'-mr'+last);
+    if(row)row.remove();
+    memCount[p]--;
+  }
+  const el=document.getElementById(p+'-mcnt');
+  if(el)el.textContent=memCount[p];
+}
+function mAge(p,i){
+  const a=getAge(document.getElementById(p+'-dob'+i)?.value);
+  const el=document.getElementById(p+'-age'+i);
+  if(el&&a!==null)el.textContent='वय: '+a+' वर्षे';
+}
+function addMem(p){
+  const maxM=(p==='sc')?4:6;
+  if(memCount[p]>=maxM)return showToast('Maximum '+maxM+' members');
+  const i=memCount[p];
+  // For ff: labels start at index 0=Spouse, 1=Child1...
+  // For others (ak/sc/cc/mc/tu): labels start at index 0=Self, 1=Spouse...
+  const ci = p==='ff' ? Math.max(0,i-2) : p==='yv' ? Math.max(0,i-1) : i;
+  const icon=memIcons[p]?.[ci]||'👤';
+  const lbl=memLabels[p]?.[ci]||('Member '+(i+1));
+  // First member (i=0) of AK/SC/CC/MC/TU = Self, no delete button
+  const canDelete = !(i===0 && p!=='ff' && p!=='yv');
+  const d=document.createElement('div');
+  d.className='mrow';d.id=p+'-mr'+i;
+  d.innerHTML=`<div class="mrow-top"><span class="mname">${icon} Member ${i+1} — ${lbl}</span>${canDelete?`<button class="del-m" onclick="delMem('${p}',${i})">✕</button>`:''}</div>
+<input type="text" class="m-name" id="${p}-nm${i}" placeholder="${lbl} नाव (optional)">
+<div class="m-row2">
+  <div><div class="m-lbl">📅 Date of Birth</div><input type="date" class="m-dob" id="${p}-dob${i}" onchange="mAge('${p}',${i})"></div>
+  <div><div class="m-lbl">🎂 वय</div><div class="m-age" id="${p}-age${i}" style="padding:9px 12px;background:#F9F7F5;border-radius:10px;font-size:13px;min-height:38px"></div></div>
+</div>`;
+  document.getElementById(p+'-members').appendChild(d);
+  memCount[p]++;
+  const ce=document.getElementById(p+'-mcnt');
+  if(ce)ce.textContent=memCount[p];
+}
+function delMem(p,i){
+  if(i===0 && p!=='ff' && p!=='yv') return showToast('Self member delete करता येत नाही');
+  document.getElementById(p+'-mr'+i)?.remove();
+  memCount[p]--;
+  const ce=document.getElementById(p+'-mcnt');
+  if(ce)ce.textContent=memCount[p];
+}
+
+function getMemberAges(p){
+  const ages=[];
+  for(let i=0;i<memCount[p];i++){
+    const el=document.getElementById(p+'-dob'+i);
+    if(el&&el.value){const a=getAge(el.value);if(a!==null)ages.push(a);}
+  }
+  return ages;
+}
+function getMemberNames(p){
+  const names=[];
+  for(let i=0;i<memCount[p];i++){
+    const el=document.getElementById(p+'-nm'+i);
+    names.push(el?el.value.trim():'');
+  }
+  return names;
+}
+
+// ============ YUVA BHARAT ============
+let LD={};
+function calcYuva(){
+  const name=document.getElementById('yv-name').value||'Client';
+  const mob=document.getElementById('yv-mob').value||'';
+  const zone=parseInt(document.getElementById('yv-zone').value);
+  const plan=document.getElementById('yv-plan').value;
+  const si=parseInt(document.getElementById('yv-si').value);
+  const freq=document.getElementById('yv-freq').value;
+  const pt=parseInt(document.getElementById('yv-pterm').value);
+  const ages=getMemberAges('yv');
+  if(!ages.length)return showToast('⚠️ कमीत कमी 1 Member चा DOB टाका');
+  const pN={B:'Basic',G:'Gold',P:'Platinum'};
+  const fL={A:'Annual',H:'Half Yearly',Q:'Quarterly',M:'Monthly'};
+  const td=tdDisc(pt);
+  const n=ages.length;
+  const fdp=n>=4?0.15:n===3?0.10:n===2?0.05:0;
+  const rows=[];
+  let baseTotal=0;
+  const mnames=getMemberNames('yv');
+  ages.forEach((age,idx)=>{
+    const ab=ageBand(age);
+    const b=YB[plan][zone][freq][si]?.[ab];
+    const nm=mnames[idx]?(' — '+mnames[idx]):'';
+    if(b){baseTotal+=b;rows.push({l:`${idx===0?'👤':'👥'} M${idx+1}${nm}: वय ${age} (${AGE_L[ab]})`,v:b});}
+  });
+  if(!baseTotal)return showToast('⚠️ SI/Plan/DOB check करा');
+  let prem=baseTotal;
+  if(n>1&&fdp>0){const da=prem*fdp;rows.push({l:`Floater Disc -${fdp*100}% (${n} members)`,v:da,c:'disc',neg:true});prem-=da;}
+  if(td>0){const ta=prem*td;rows.push({l:`${pt}yr Term Disc -${td*100}%`,v:ta,c:'disc',neg:true});prem-=ta;}
+  const discs=[{id:'yv-d0',l:'Loyalty',p:-2.5},{id:'yv-d1',l:'Normal BMI',p:-2.5},{id:'yv-d2',l:'Non-Diabetic',p:-2.5},{id:'yv-d3',l:'Non-Hypertensive',p:-2.5},{id:'yv-d4',l:'No Hospitalization',p:-2.5},{id:'yv-d5',l:'High BMI',p:2.5},{id:'yv-d6',l:'Diabetic',p:2.5},{id:'yv-d7',l:'Hypertensive',p:2.5}];
+  const appliedD=[];
+  discs.forEach(c=>{if(document.getElementById(c.id)?.classList.contains('on')){const a=prem*(c.p/100);prem+=a;appliedD.push({l:c.l,p:c.p});rows.push({l:(c.p<0?'✅ ':'⚠️ ')+c.l+' ('+c.p+'%)',v:Math.abs(a),c:c.p<0?'disc':'',neg:c.p<0});}});
+  rows.push({l:`${fL[freq]} Total (GST वगळून)`,v:prem});
+  const mnames2=getMemberNames('yv');
+  // Build per-member premium array for PDF breakup
+  const memPremsArr=[];
+  ages.forEach(age=>{const ab=ageBand(age);const b=YB[plan][zone][freq][si]?.[ab];memPremsArr.push(b||0);});
+  // Build discount rows for PDF
+  const discRowsArr=[];
+  if(n>1&&fdp>0)discRowsArr.push({l:'Floater Discount -'+(fdp*100)+'% ('+n+' members)',v:Math.round(baseTotal*fdp),neg:true});
+  if(td>0)discRowsArr.push({l:pt+'yr Term Discount -'+(td*100)+'%',v:Math.round((baseTotal*(1-fdp))*td),neg:true});
+  appliedD.forEach(d=>{if(d.p<0)discRowsArr.push({l:d.l+' ('+d.p+'%)',v:Math.round(prem*Math.abs(d.p)/100),neg:true});});
+  LD.yv={name,mob,zone,plan:pN[plan],si,freq:fL[freq],prem:Math.round(prem),pt,ages,discounts:appliedD,members:ages,memberNames:mnames2,memberPrems:memPremsArr,discountRows:discRowsArr};
+  document.getElementById('yv-fh').textContent=`📋 Yuva Bharat ${pN[plan]} Benefits`;
+  document.getElementById('yv-rlbl').textContent=`${fL[freq]} Premium (GST वगळून)`;
+  showResult('yv',prem,bdR(rows),yvFeats(plan,si),'');
+}
+function yvFeats(plan,si){
+  // BASE PLAN — Brochure exact features
+  const b=[
+    `Sum Insured: ₹${fmtL(si)} per person (Individual / Floater)`,
+    `Entry Age: 18 to 45 years | Family: 91 days to 25 years`,
+    `Cashless Hospitalization — PAN India Network`,
+    `Single / Deluxe AC Room`,
+    `Pre-Hospitalization: 60 days`,
+    `Post-Hospitalization: 90 days`,
+    `Day Care Procedures: 541+ covered`,
+    `Road Ambulance: ₹5,000 per event`,
+    `Ayush Treatment — upto 100% of Sum Insured`,
+    `Hospital Cash Benefit`,
+    `Cost of Health Check-up covered`,
+    `New Born Baby Cover`,
+    `Medical Second Opinion`,
+    `Reinstatement of Sum Insured`,
+    `Coverage for Hazardous Sports`,
+    `Mental Illness covered (24 months waiting)`,
+    `Pre-existing Disease covered (24 months waiting)`,
+    `Genetic Disorders covered (24 months waiting)`,
+    `Modern Treatment covered`,
+    `Zone-wise premium | Lifelong Renewals`,
+    `No Pre-policy Medical Check-up`,
+    `Instalment: Monthly / Quarterly / Half-Yearly`,
+    `Loyalty Discount 2.5% | Floater Discount upto 15%`,
+    `Tax Benefit: Section 80D`
+  ];
+  if(plan==='G'||plan==='Gold'){
+    b.push(
+      `── GOLD PLAN EXTRAS ──`,
+      `Personal Accident Benefit`,
+      `Critical Illness Benefit (10 diseases)`,
+      `Air Ambulance Cover`,
+      `Auto Top-Up feature`
+    );
+  }
+  if(plan==='P'||plan==='Platinum'){
+    b.push(
+      `── PLATINUM PLAN EXTRAS ──`,
+      `Personal Accident Benefit`,
+      `Critical Illness Benefit (15 diseases)`,
+      `Air Ambulance Cover`,
+      `Auto Top-Up feature`,
+      `── MOTHER & WELL BABY COVERS ──`,
+      `Maternity Benefit (Platinum exclusive)`,
+      `Infertility Treatment covered`,
+      `Pre-term / Premature Birth covered`,
+      `Vaccination Charges covered`,
+      `Birth Right Benefit`,
+      `Enhanced Maternity Limit: ₹50K/₹75K/₹1L (Optional add-on)`
+    );
+  }
+  return b;
+}
+
+// ============ FAMILY FLOATER ============
+function calcFF(){
+  const name=document.getElementById('ff-name').value||'Client';
+  const mob=document.getElementById('ff-mob').value||'';
+  const si=parseInt(document.getElementById('ff-si').value);
+  const zone=parseInt(document.getElementById('ff-zone').value);
+  const ages=getMemberAges('ff');
+  const mnames=getMemberNames('ff');
+  if(!ages.length)return showToast('⚠️ कमीत कमी 1 DOB टाका');
+  if(!FF_RATES[zone]||!FF_RATES[zone][si])return showToast('⚠️ SI निवडा');
+  const n=ages.length;
+  const dp=n>=4?0.15:n===3?0.10:n===2?0.05:0;
+  const memberLabels=['Self/Proposer','Spouse','Child 1','Child 2','Child 3','Child 4'];
+  const memRawArr=ages.map(age=>FF_RATES[zone][si][Math.min(age,100)]||0);
+  const baseTotal=memRawArr.reduce((a,b)=>a+b,0);
+  const disc=Math.round(baseTotal*dp);
+  const prem=baseTotal-disc;
+  const factor=(1-dp);
+  const memPremsArr=memRawArr.map((r,i)=>{
+    if(i===n-1){const s=memRawArr.slice(0,n-1).reduce((a,r2)=>a+Math.round(r2*factor),0);return prem-s;}
+    return Math.round(r*factor);
+  });
+  const discRowsArr=[];
+  if(disc>0)discRowsArr.push({l:'Family Disc -'+(dp*100)+'% ('+n+' members)',v:disc,neg:true});
+  LD.ff={name,mob,si,zone:'Zone '+zone,plan:'Family Floater',freq:'Annual',prem,pt:1,
+    ages,n,members:ages,memberNames:mnames,memberPrems:memPremsArr,discountRows:discRowsArr};
+  const rows=[];
+  ages.forEach((age,i)=>{
+    const lbl=mnames[i]||(memberLabels[i]||'Member '+(i+1));
+    rows.push({l:'👤 '+(i+1)+'. '+lbl+' — वय '+age,v:memRawArr[i]});
+  });
+  if(n>1)rows.push({l:'Base Total ('+n+' members)',v:baseTotal});
+  if(disc>0)rows.push({l:'Family Disc -'+(dp*100)+'% ('+n+' members)',v:disc,neg:true,c:'disc'});
+  rows.push({l:'Net Annual Premium (GST वगळून)',v:prem,bold:true});
+  showResult('ff',prem,bdR(rows),
+    ['New India Floater Mediclaim | UIN: NIAHLIP25039V082425',
+     'Zone '+(zone===1?'1 (Maharashtra / Gujarat)':'2 (Rest of India)')+' | SI ₹'+fmtL(si),
+     n+' Member(s) | प्रत्येकाच्या वयाचे Exact Rate',
+     'Cashless Hospitalization — Network Hospitals',
+     'Pre-Hospitalization: 30 days | Post-Hospitalization: 60 days',
+     'Day Care: 541+ procedures covered',
+     'Cumulative Bonus: +10% per claim-free year',
+     'AYUSH & Mental Illness covered'],
+    n+' Member(s) | Zone '+zone+' | SI ₹'+fmtL(si));
+}
+
+
+
+function calcAsha(){
+  const name=document.getElementById('ak-name').value||'Client';
+  const mob=document.getElementById('ak-mob').value||'';
+  const zone=parseInt(document.getElementById('ak-zone').value)||1;
+  const si=parseInt(document.getElementById('ak-si').value)||500000;
+  const ages=getMemberAges('ak');
+  const mnames=getMemberNames('ak');
+  if(!ages.length)return showToast('⚠️ कमीत कमी 1 member चे DOB टाका');
+
+  let baseTotal=0;
+  const memPremsArr=[];
+  ages.forEach(age=>{
+    const ab=ageBand(age);
+    const r=AK[zone]?.[si]?.[ab]||0;
+    memPremsArr.push(r);
+    baseTotal+=r;
+  });
+
+  const discRowsArr=[];
+  let prem=baseTotal;
+  if(ages.length>=2){
+    const disc=Math.round(baseTotal*0.05);
+    discRowsArr.push({l:'Family Discount -5% ('+ages.length+' members)',v:disc,neg:true});
+    prem-=disc;
+  }
+  prem=Math.round(prem);
+  if(prem<=0)return showToast('⚠️ Rate सापडला नाही');
+
+  const memberLabels=['Self/Proposer','Spouse','Daughter 1','Daughter 2','Daughter 3','Member'];
+  LD.ak={name,mob,zone:'Zone '+zone,plan:'Asha Kiran',si,freq:'Annual',prem,pt:1,
+    ages,members:[...ages],memberNames:[...mnames],memberPrems:[...memPremsArr],discountRows:[...discRowsArr]};
+
+  const rows=[];
+  ages.forEach((age,i)=>{
+    const lbl=mnames[i]||memberLabels[i]||('Member '+(i+1));
+    rows.push({l:'👤 '+lbl+' — वय '+age,v:memPremsArr[i]});
+  });
+  discRowsArr.forEach(r=>rows.push(r));
+  rows.push({l:'Annual Total (GST वगळून)',v:prem,bold:true});
+
+  showResult('ak',prem,bdR(rows),
+    ['Exclusively for Families with Girl Child',
+     ages.length+' Members | Zone '+zone+' | SI ₹'+fmtL(si),
+     'Entry Age: 0–65 वर्षे | Lifelong renewal',
+     'Cashless Hospitalization (Network Hospitals)',
+     'Maternity Benefit included',
+     'New Born Baby Cover from Day 1',
+     'Critical Care Benefit (₹50,000)',
+     'Personal Accident Cover included',
+     'No Co-payment clause',
+     'AYUSH Treatment covered'],
+    ages.length+' Members | Zone '+zone+' | SI ₹'+fmtL(si));
+}
+
+function calcSC(){
+  const name=document.getElementById('sc-name').value||'Client';
+  const mob=document.getElementById('sc-mob').value||'';
+  const zone=parseInt(document.getElementById('sc-zone').value)||1;
+  const si=parseInt(document.getElementById('sc-si').value)||100000;
+  const ages=getMemberAges('sc');
+  const mnames=getMemberNames('sc');
+  if(!ages.length)return showToast('⚠️ कमीत कमी 1 member चे DOB टाका');
+
+  let baseTotal=0;
+  const memPremsArr=[];
+  ages.forEach(age=>{
+    const ab=ageBand(age);
+    let r=0;
+    if(SC_E[zone]?.[si]?.[ab]) r=SC_E[zone][si][ab];
+    else if(SC_A[si]?.[ab]) r=SC_A[si][ab];
+    memPremsArr.push(r);
+    baseTotal+=r;
+  });
+
+  const discRowsArr=[];
+  const prem=Math.round(baseTotal);
+  if(prem<=0)return showToast('⚠️ Rate सापडला नाही');
+
+  const memberLabels=['Self','Spouse','Member 3','Member 4'];
+  LD.sc={name,mob,zone:'Zone '+zone,plan:'Senior Citizen',si,freq:'Annual',prem,pt:1,
+    ages,members:[...ages],memberNames:[...mnames],memberPrems:[...memPremsArr],discountRows:[...discRowsArr]};
+
+  const rows=[];
+  ages.forEach((age,i)=>{
+    const lbl=mnames[i]||memberLabels[i]||('Member '+(i+1));
+    rows.push({l:'👴 '+lbl+' — वय '+age,v:memPremsArr[i]});
+  });
+  rows.push({l:'⚠️ Co-payment 20% applicable',v:'(Client pays 20% of claim)',isStr:true});
+  rows.push({l:'Annual Total (GST वगळून)',v:prem,bold:true});
+
+  showResult('sc',prem,bdR(rows),
+    ['Age: 60–80 वर्षे (Entry) | Renewal upto 90',
+     ages.length+' Member(s) | Zone '+zone+' | SI ₹'+fmtL(si),
+     '⚠️ Co-payment: 20% (Client स्वतः भरतो)',
+     'Cashless Hospitalization available',
+     'Pre-existing diseases covered after 18 months',
+     'Free Annual Health Check-up',
+     'Pre-Hospitalization: 30 days | Post: 60 days',
+     'Ambulance charges covered',
+     'Domiciliary Hospitalization covered',
+     'No age limit for renewal'],
+    ages.length+' Member(s) | Zone '+zone+' | SI ₹'+fmtL(si)+' | Co-pay 20%');
+}
+
+function calcCC(){
+  const name=document.getElementById('cc-name').value||'Client';
+  const mob=document.getElementById('cc-mob').value||'';
+  const plan=document.getElementById('cc-plan').value||'9';
+  const si=parseInt(document.getElementById('cc-si').value)||1000000;
+  const ages=getMemberAges('cc');
+  const mnames=getMemberNames('cc');
+  if(!ages.length)return showToast('⚠️ कमीत कमी 1 member चे DOB टाका');
+
+  let baseTotal=0;
+  const memPremsArr=[];
+  ages.forEach(age=>{
+    const ab=ageBand(age);
+    const r=CC_BASE[plan]?.[si]?.[ab]||0;
+    memPremsArr.push(r);
+    baseTotal+=r;
+  });
+
+  const discRowsArr=[];
+  const prem=Math.round(baseTotal);
+  if(prem<=0)return showToast('⚠️ Rate सापडला नाही');
+
+  const memberLabels=['Self','Spouse','Member 3','Member 4','Member 5','Member 6'];
+  LD.cc={name,mob,zone:'',plan:'Criti Protect '+plan+' CI',si,freq:'Annual',prem,pt:1,
+    ages,members:[...ages],memberNames:[...mnames],memberPrems:[...memPremsArr],discountRows:[...discRowsArr]};
+
+  const rows=[];
+  ages.forEach((age,i)=>{
+    const lbl=mnames[i]||memberLabels[i]||('Member '+(i+1));
+    rows.push({l:'👤 '+lbl+' — वय '+age,v:memPremsArr[i]});
+  });
+  rows.push({l:'Total Benefit Amount',v:'₹'+fmtL(si)+' (Lump Sum)',isStr:true});
+  rows.push({l:'Annual Premium (Approx, GST वगळून)',v:prem,bold:true});
+
+  const ciList={'9':'Cancer, Heart Attack, Stroke, Kidney Failure + 5 more',
+    '18':'9 CI + Aorta Graft, Major Burns + 9 more',
+    '25':'18 CI + Alzheimer, Parkinson + 7 more',
+    '41':'Comprehensive - 41 Critical Illnesses'};
+  showResult('cc',prem,bdR(rows),
+    ['Critical Illnesses Covered: '+plan,
+     ciList[plan]||'',
+     ages.length+' Member(s) | Benefit ₹'+fmtL(si),
+     'Age: 18–65 वर्षे',
+     'Lump Sum on First Diagnosis — No hospitalization needed',
+     'Cancer (all stages), Heart Attack, Stroke covered',
+     'Kidney Failure, Liver Failure, Transplants covered',
+     'Worldwide coverage',
+     'Survival period: 30 days after diagnosis',
+     'Tax Benefit u/s 80D'],
+    ages.length+' Member(s) | '+plan+' CI | Benefit ₹'+fmtL(si)+' (Approx)');
+}
+
+// ============ MEDICLAIM ============
+const FF_RATES={
+  1:{
+    200000:[2324,2338,2351,2365,2378,2392,2406,2419,2433,2446,2565,2683,2801,2919,3037,3156,3274,3392,3510,3628,3747,3865,3983,4101,4219,4338,4390,4443,4495,4548,4600,4653,4705,4758,5067,5376,5684,5993,6302,6566,6830,7093,7357,7621,8121,8621,9121,9621,10121,10823,11524,12226,12927,13629,14281,14933,15585,16237,16889,17931,18974,20016,21058,22100,22285,22469,22653,23205,23758,24310,24863,25415,25968,26520,27073,27625,28178,28730,29283,29835,30388,30941,31493,32046,32598,33151,33703,34256,34808,35361,35913,36466,37018,37571,38123,38676,39228,39781,40333,40886,41438],
+    300000:[2710,2726,2742,2758,2774,2789,2805,2821,2837,2853,2994,3135,3276,3417,3558,3699,3840,3981,4122,4263,4404,4545,4686,4827,4968,5109,5172,5235,5297,5360,5423,5485,5548,5611,5979,6347,6716,7084,7453,7767,8082,8397,8712,9027,9623,10220,10816,11413,12009,12846,13683,14520,15357,16194,16972,17750,18528,19306,20084,21328,22571,23815,25058,26302,26521,26740,26959,27617,28274,28932,29590,30247,30905,31562,32220,32877,33535,34192,34850,35507,36165,36822,37480,38138,38795,39453,40110,40768,41425,42083,42740,43398,44055,44713,45371,46028,46686,47343,48001,48658,49316],
+    500000:[3026,3043,3061,3079,3096,3114,3132,3149,3167,3185,3344,3504,3664,3823,3983,4143,4302,4462,4621,4781,4941,5100,5260,5420,5579,5739,5810,5881,5952,6023,6094,6165,6236,6307,6724,7141,7558,7975,8393,8749,9105,9461,9818,10174,10849,11525,12200,12876,13551,14679,15807,16935,18063,19191,19892,20593,21293,21994,22695,24102,25510,26917,28325,29733,29981,30228,30476,31219,31963,32706,33449,34193,34936,35679,36423,37166,37909,38653,39396,40139,40883,41626,42369,43112,43856,44599,45342,46086,46829,47572,48316,49059,49802,50546,51289,52032,52776,53519,54262,55006,55749],
+    800000:[3465,3485,3505,3526,3546,3566,3587,3607,3627,3647,3834,4021,4207,4394,4581,4767,4954,5141,5327,5514,5701,5887,6074,6261,6447,6634,6714,6795,6875,6955,7036,7116,7196,7276,7762,8247,8732,9217,9702,10117,10531,10945,11360,11774,12631,13488,14345,15201,16058,17621,19183,20745,22308,23870,24368,24867,25365,25863,26361,27992,29623,31254,32885,34516,34803,35091,35379,36242,37104,37967,38830,39693,40556,41419,42282,43145,44008,44870,45733,46596,47459,48322,49185,50048,50911,51774,52636,53499,54362,55225,56088,56951,57814,58677,59540,60403,61265,62128,62991,63854,64717],
+    1000000:[3656,3678,3699,3721,3742,3763,3785,3806,3827,3849,4079,4309,4539,4769,4999,5229,5460,5690,5920,6150,6380,6610,6840,7070,7300,7530,7552,7573,7594,7615,7636,7658,7679,7700,8215,8729,9244,9759,10273,10713,11153,11592,12032,12471,13630,14788,15946,17105,18263,20042,21821,23601,25380,27159,27727,28294,28861,29429,29996,31690,33385,35079,36773,38468,38788,39109,39429,40391,41353,42314,43276,44238,45199,46161,47123,48084,49046,50008,50970,51931,52893,53855,54816,55778,56740,57701,58663,59625,60586,61548,62510,63471,64433,65395,66357,67318,68280,69242,70203,71165,72127],
+    1200000:[3925,3948,3971,3994,4017,4040,4063,4086,4109,4132,4382,4633,4884,5134,5385,5636,5887,6137,6388,6639,6889,7140,7391,7642,7892,8143,8152,8160,8169,8177,8186,8194,8203,8212,8762,9313,9864,10414,10965,11435,11905,12376,12846,13316,14607,15898,17189,18480,19771,21698,23625,25552,27479,29406,30021,30636,31250,31865,32479,34314,36149,37984,39820,41655,42002,42349,42696,43737,44779,45820,46862,47903,48944,49986,51027,52068,53110,54151,55192,56234,57275,58317,59358,60399,61441,62482,63523,64565,65606,66648,67689,68730,69772,70813,71854,72896,73937,74978,76020,77061,78103],
+    1500000:[4198,4223,4247,4272,4296,4321,4345,4370,4394,4419,4688,4957,5226,5494,5763,6032,6301,6570,6839,7108,7377,7646,7914,8183,8452,8721,8732,8742,8752,8763,8773,8784,8794,8805,9397,9989,10581,11173,11765,12271,12777,13282,13788,14294,15673,17052,18432,19811,21190,23257,25324,27391,29458,31524,32184,32844,33503,34163,34823,36791,38759,40727,42695,44663,45035,45408,45780,46896,48013,49130,50246,51363,52479,53596,54712,55829,56946,58062,59179,60295,61412,62529,63645,64762,65878,66995,68111,69228,70345,71461,72578,73694,74811,75927,77044,78161,79277,80394,81510,82627,83744]
+  },
+  2:{
+    200000:[1980,1991,2003,2015,2026,2038,2049,2061,2072,2084,2185,2285,2386,2487,2587,2688,2789,2890,2990,3091,3192,3292,3393,3494,3594,3695,3740,3785,3829,3874,3919,3963,4008,4053,4316,4579,4842,5105,5368,5593,5818,6043,6267,6492,6918,7344,7770,8196,8622,9219,9817,10415,11012,11610,12165,12721,13276,13832,14387,15275,16163,17051,17938,18826,18983,19140,19297,19768,20238,20709,21180,21650,22121,22591,23062,23533,24003,24474,24945,25415,25886,26357,26827,27298,27769,28239,28710,29181,29651,30122,30593,31063,31534,32005,32475,32946,33417,33887,34358,34829,35299],
+    300000:[2309,2322,2336,2349,2363,2376,2390,2403,2417,2430,2550,2670,2791,2911,3031,3151,3271,3391,3511,3632,3752,3872,3992,4112,4232,4352,4406,4459,4512,4566,4619,4673,4726,4779,5093,5407,5721,6035,6349,6617,6885,7153,7421,7689,8198,8706,9214,9722,10230,10943,11656,12369,13082,13795,14458,15121,15783,16446,17109,18168,19227,20287,21346,22405,22592,22779,22965,23525,24086,24646,25206,25766,26326,26886,27446,28007,28567,29127,29687,30247,30807,31367,31927,32488,33048,33608,34168,34728,35288,35848,36408,36969,37529,38089,38649,39209,39769,40329,40890,41450,42010],
+    500000:[2577,2592,2608,2623,2638,2653,2668,2683,2698,2713,2849,2985,3121,3257,3393,3529,3665,3801,3937,4073,4209,4345,4481,4617,4753,4889,4949,5010,5070,5131,5191,5251,5312,5372,5728,6083,6438,6794,7149,7453,7756,8060,8363,8667,9242,9817,10393,10968,11543,12504,13465,14426,15387,16348,16945,17542,18139,18736,19332,20531,21731,22930,24129,25328,25539,25750,25961,26594,27227,27861,28494,29127,29760,30393,31027,31660,32293,32926,33559,34193,34826,35459,36092,36725,37359,37992,38625,39258,39891,40525,41158,41791,42424,43057,43691,44324,44957,45590,46223,46857,47490],
+    800000:[2952,2969,2986,3003,3021,3038,3055,3072,3090,3107,3266,3425,3584,3743,3902,4061,4220,4379,4538,4697,4856,5015,5174,5333,5492,5651,5720,5788,5856,5925,5993,6062,6130,6198,6612,7025,7438,7852,8265,8618,8971,9324,9677,10030,10760,11490,12219,12949,13679,15010,16341,17672,19003,20334,20758,21183,21607,22032,22456,23845,25234,26624,28013,29402,29647,29892,30137,30872,31607,32343,33078,33813,34548,35283,36018,36753,37488,38223,38958,39693,40428,41163,41898,42633,43368,44103,44838,45574,46309,47044,47779,48514,49249,49984,50719,51454,52189,52924,53659,54394,55129],
+    1000000:[3115,3133,3151,3169,3188,3206,3224,3242,3260,3279,3475,3671,3867,4063,4259,4455,4651,4847,5043,5239,5435,5631,5827,6023,6219,6415,6433,6451,6469,6487,6505,6523,6541,6559,6998,7436,7875,8313,8751,9126,9500,9875,10249,10624,11611,12597,13584,14571,15557,17073,18589,20104,21620,23136,23619,24102,24586,25069,25552,26995,28439,29882,31325,32769,33042,33315,33588,34407,35226,36046,36865,37684,38503,39322,40142,40961,41780,42599,43418,44238,45057,45876,46695,47515,48334,49153,49972,50791,51611,52430,53249,54068,54888,55707,56526,57345,58164,58984,59803,60622,61441],
+    1200000:[3344,3363,3383,3402,3422,3441,3461,3480,3500,3519,3733,3947,4160,4374,4587,4801,5014,5228,5442,5655,5869,6082,6296,6509,6723,6937,6944,6951,6959,6966,6973,6980,6988,6995,7464,7933,8402,8871,9340,9741,10142,10542,10943,11344,12443,13543,14642,15742,16842,18483,20125,21767,23408,25050,25573,26097,26620,27144,27667,29231,30794,32357,33920,35484,35779,36075,36371,37258,38145,39032,39919,40806,41693,42580,43467,44355,45242,46129,47016,47903,48790,49677,50564,51451,52338,53225,54113,55000,55887,56774,57661,58548,59435,60322,61209,62096,62983,63871,64758,65645,66532],
+    1500000:[3576,3597,3618,3639,3660,3681,3702,3722,3743,3764,3993,4222,4451,4680,4910,5139,5368,5597,5826,6055,6284,6513,6742,6971,7200,7429,7438,7447,7456,7465,7474,7482,7491,7500,8005,8509,9013,9518,10022,10453,10884,11315,11746,12176,13351,14526,15701,16876,18051,19812,21572,23333,25093,26854,27416,27978,28540,29102,29664,31340,33017,34693,36370,38046,38364,38681,38998,39949,40900,41851,42802,43753,44705,45656,46607,47558,48509,49460,50412,51363,52314,53265,54216,55167,56119,57070,58021,58972,59923,60874,61825,62777,63728,64679,65630,66581,67532,68484,69435,70386,71337]
+  }
+};
+NMC_RATES={
+  1:{
+    100000:[3401,3421,3441,3460,3480,3500,3520,3540,3560,3580,3589,3598,3607,3616,3625,3634,3643,3652,3661,3670,3679,3688,3697,3706,3715,3724,3733,3742,3845,3948,4051,4154,4257,4360,4463,4566,4669,4772,4875,4978,5081,5361,5642,5923,6204,6484,6765,7046,7327,7776,8225,8674,9123,9572,10129,10687,11244,11802,12359,12873,13387,13901,14415,14929,15316,15703,16089,16476,16863,16976,17090,17203,17316,17430,18012,18594,19176,19758,20340,20648,20955,21263,21571,21879,22187,22495,22803,23110,23418,23726,24034,24342,24477,24612,24748,24883,25018,25153,25289,25424,25559],
+    200000:[4621,4648,4675,4702,4729,4756,4783,4810,4837,4864,4900,4937,4973,5009,5045,5081,5118,5154,5190,5226,5262,5299,5335,5371,5407,5443,5479,5516,5703,5891,6079,6266,6454,6642,6829,7017,7205,7392,7580,7768,7955,8406,8857,9308,9759,10210,10661,11112,11562,12201,12840,13479,14118,14756,15320,15884,16448,17012,17576,18735,19894,21053,22212,23371,23989,24607,25224,25842,26460,26639,26818,26998,27177,27356,28276,29197,30117,31037,31957,32444,32931,33417,33904,34391,34877,35364,35851,36338,36824,37311,37798,38284,38497,38710,38922,39135,39348,39561,39773,39986,40199],
+    300000:[5089,5118,5148,5178,5208,5237,5267,5297,5327,5357,5418,5480,5542,5603,5665,5727,5788,5850,5912,5973,6035,6097,6159,6220,6282,6344,6405,6467,6689,6911,7133,7355,7577,7800,8022,8244,8466,8688,8910,9132,9354,9888,10422,10955,11489,12023,12557,13091,13624,14381,15137,15893,16649,17406,17998,18591,19184,19777,20369,21832,23295,24757,26220,27682,28738,29793,30849,31904,32960,33184,33408,33632,33856,34080,35228,36377,37526,38675,39824,40432,41040,41648,42256,42864,43471,44079,44687,45295,45903,46511,47119,47727,47992,48257,48522,48787,49052,49318,49583,49848,50113],
+    400000:[5949,5984,6019,6053,6088,6123,6158,6192,6227,6262,6302,6342,6382,6422,6461,6501,6541,6581,6621,6661,6701,6741,6780,6820,6860,6900,6940,6980,7207,7434,7661,7888,8115,8343,8570,8797,9024,9251,9478,9705,9932,10500,11068,11636,12204,12772,13340,13908,14476,15314,16153,16991,17830,18668,19769,20869,21970,23071,24171,25911,27651,29392,31132,32872,34128,35383,36639,37895,39151,39418,39684,39951,40217,40484,41850,43217,44584,45951,47318,48041,48765,49488,50211,50935,51658,52381,53105,53828,54551,55275,55998,56721,57037,57352,57667,57982,58297,58612,58927,59242,59557],
+    500000:[6808,6848,6888,6928,6967,7007,7047,7087,7127,7166,7185,7203,7221,7239,7257,7275,7293,7311,7330,7348,7366,7384,7402,7420,7438,7456,7475,7493,7725,7957,8189,8421,8653,8885,9117,9349,9581,9813,10045,10277,10509,11112,11714,12316,12918,13521,14123,14725,15328,16248,17169,18090,19010,19931,21539,23147,24756,26364,27972,29990,32008,34026,36043,38061,39518,40974,42430,43887,45343,45652,45961,46270,46579,46888,48473,50058,51643,53228,54813,55652,56490,57329,58168,59007,59845,60684,61523,62361,63200,64039,64877,65716,66081,66446,66811,67176,67542,67907,68272,68637,69002],
+    600000:[7352,7395,7438,7481,7524,7567,7610,7653,7696,7739,7758,7778,7797,7817,7836,7856,7876,7895,7915,7934,7954,7973,7993,8012,8032,8051,8071,8090,8341,8592,8842,9093,9344,9595,9845,10096,10347,10597,10848,11099,11350,12000,12650,13300,13951,14601,15251,15901,16552,17546,18540,19535,20529,21523,23250,24977,26703,28430,30156,32332,34507,36682,38858,41033,42603,44173,45743,47313,48883,49216,49549,49882,50216,50549,52258,53967,55676,57384,59093,59998,60902,61806,62710,63615,64519,65423,66327,67231,68136,69040,69944,70848,71242,71635,72029,72423,72816,73210,73603,73997,74391],
+    700000:[7896,7942,7988,8034,8080,8127,8173,8219,8265,8311,8332,8353,8374,8395,8416,8437,8458,8479,8500,8521,8542,8563,8584,8605,8626,8647,8668,8689,8958,9227,9496,9765,10035,10304,10573,10842,11111,11380,11649,11918,12188,12886,13584,14283,14981,15680,16378,17077,17775,18843,19911,20978,22046,23114,24959,26805,28651,30497,32343,34676,37009,39342,41674,44007,45691,47375,49059,50743,52427,52784,53142,53499,53856,54213,56046,57878,59711,61544,63376,64346,65316,66286,67255,68225,69195,70165,71135,72105,73074,74044,75014,75984,76406,76828,77250,77672,78094,78517,78939,79361,79783],
+    800000:[8444,8493,8543,8592,8641,8691,8740,8789,8839,8888,8911,8933,8956,8978,9000,9023,9045,9068,9090,9113,9135,9158,9180,9203,9225,9247,9270,9292,9580,9867,10154,10442,10729,11016,11304,11591,11878,12166,12453,12740,13028,13779,14531,15283,16034,16786,17537,18289,19040,20168,21296,22425,23553,24681,27211,29742,32272,34803,37333,40035,42736,45438,48139,50841,52790,54740,56690,58640,60590,61003,61416,61830,62243,62656,64779,66901,69023,71146,73268,74391,75514,76637,77759,78882,80005,81128,82251,83373,84496,85619,86742,87865,88353,88841,89329,89817,90305,90793,91281,91770,92258],
+    1000000:[9547,9602,9658,9714,9770,9826,9882,9937,9993,10049,10074,10100,10125,10151,10176,10201,10227,10252,10277,10303,10328,10354,10379,10404,10430,10455,10480,10506,10830,11155,11479,11804,12128,12453,12777,13102,13426,13751,14075,14400,14724,15568,16412,17256,18100,18944,19788,20631,21475,22765,24055,25345,26635,27925,30129,32334,34538,36742,38946,41755,44565,47374,50183,52993,55020,57048,59076,61103,63131,63561,63991,64421,64851,65281,67488,69695,71902,74109,76316,77484,78651,79819,80987,82155,83323,84490,85658,86826,87994,89161,90329,91497,92005,92514,93022,93530,94039,94547,95055,95564,96072],
+    1200000:[10380,10440,10501,10562,10622,10683,10744,10805,10865,10926,10954,10981,11009,11036,11064,11091,11119,11146,11174,11201,11229,11256,11284,11312,11339,11367,11394,11422,11774,12127,12480,12832,13185,13538,13890,14243,14596,14949,15301,15654,16007,16924,17841,18758,19676,20593,21510,22427,23345,24747,26150,27552,28954,30357,32742,35127,37512,39897,42282,45332,48382,51432,54482,57532,59733,61934,64136,66337,68538,69005,69472,69939,70406,70873,73269,75665,78061,80457,82853,84120,85388,86656,87924,89192,90460,91727,92995,94263,95531,96799,98066,99334,99886,100438,100990,101542,102094,102645,103197,103749,104301],
+    1500000:[11768,11837,11906,11975,12044,12113,12181,12250,12319,12388,12419,12450,12482,12513,12544,12576,12607,12638,12670,12701,12732,12763,12795,12826,12857,12889,12920,12951,13351,13750,14149,14549,14948,15348,15747,16147,16546,16946,17345,17744,18144,19184,20223,21263,22303,23343,24383,25422,26462,28052,29641,31231,32821,34410,37098,39785,42472,45160,47847,51298,54750,58201,61652,65104,67595,70086,72577,75068,77559,78087,78616,79144,79673,80201,82913,85624,88335,91047,93758,95193,96627,98062,99496,100931,102366,103800,105235,106669,108104,109539,110973,112408,113032,113657,114281,114906,115530,116155,116779,117404,118028]
+  },
+  2:{
+    100000:[2897,2914,2931,2948,2965,2982,2999,3016,3033,3049,3057,3065,3073,3080,3088,3096,3103,3111,3119,3126,3134,3142,3149,3157,3165,3173,3180,3188,3276,3363,3451,3539,3626,3714,3802,3889,3977,4065,4153,4240,4328,4567,4806,5045,5285,5524,5763,6002,6241,6624,7006,7389,7771,8154,8629,9103,9578,10053,10528,10966,11404,11842,12280,12718,13047,13376,13706,14035,14365,14461,14558,14654,14751,14847,15343,15839,16335,16831,17326,17589,17851,18113,18375,18638,18900,19162,19424,19687,19949,20211,20473,20736,20851,20966,21081,21196,21312,21427,21542,21657,21772],
+    200000:[3936,3959,3982,4006,4029,4052,4075,4098,4121,4144,4174,4205,4236,4267,4298,4329,4359,4390,4421,4452,4483,4514,4544,4575,4606,4637,4668,4699,4858,5018,5178,5338,5498,5658,5818,5977,6137,6297,6457,6617,6777,7161,7545,7929,8313,8697,9081,9465,9850,10394,10938,11482,12026,12570,13051,13531,14011,14492,14972,15960,16947,17934,18921,19909,20435,20961,21487,22014,22540,22693,22845,22998,23151,23303,24087,24871,25655,26439,27223,27637,28052,28467,28881,29296,29710,30125,30540,30954,31369,31783,32198,32613,32794,32975,33156,33337,33519,33700,33881,34062,34243],
+    300000:[4335,4360,4386,4411,4436,4462,4487,4512,4538,4563,4616,4668,4721,4773,4826,4878,4931,4983,5036,5088,5141,5194,5246,5299,5351,5404,5456,5509,5698,5887,6076,6266,6455,6644,6833,7022,7212,7401,7590,7779,7968,8423,8878,9332,9787,10242,10696,11151,11606,12250,12894,13539,14183,14827,15332,15837,16342,16847,17352,18598,19844,21089,22335,23581,24480,25380,26279,27178,28077,28268,28458,28649,28840,29031,30009,30988,31967,32946,33924,34442,34960,35478,35996,36513,37031,37549,38067,38585,39103,39620,40138,40656,40882,41108,41334,41560,41785,42011,42237,42463,42689],
+    400000:[5068,5097,5127,5157,5186,5216,5245,5275,5305,5334,5368,5402,5436,5470,5504,5538,5572,5606,5640,5674,5708,5742,5776,5810,5844,5878,5912,5946,6139,6333,6526,6720,6913,7107,7300,7494,7687,7880,8074,8267,8461,8945,9428,9912,10396,10880,11364,11848,12331,13046,13760,14474,15188,15903,16840,17778,18715,19653,20590,22073,23555,25037,26520,28002,29072,30141,31211,32281,33351,33578,33805,34032,34259,34486,35650,36815,37979,39144,40308,40924,41540,42156,42773,43389,44005,44621,45237,45854,46470,47086,47702,48318,48587,48855,49124,49392,49660,49929,50197,50466,50734],
+    500000:[5800,5833,5867,5901,5935,5969,6003,6037,6071,6105,6120,6136,6151,6167,6182,6197,6213,6228,6244,6259,6275,6290,6305,6321,6336,6352,6367,6383,6580,6778,6976,7173,7371,7569,7766,7964,8162,8359,8557,8755,8952,9465,9978,10492,11005,11518,12031,12544,13057,13841,14625,15410,16194,16978,18348,19718,21088,22458,23828,25547,27266,28985,30704,32422,33663,34904,36144,37385,38626,38889,39152,39415,39678,39941,41292,42642,43992,45342,46693,47407,48121,48836,49550,50265,50979,51694,52408,53123,53837,54551,55266,55980,56291,56602,56913,57224,57535,57846,58157,58468,58779],
+    600000:[6263,6299,6336,6373,6409,6446,6482,6519,6556,6592,6609,6626,6642,6659,6676,6692,6709,6725,6742,6759,6775,6792,6809,6825,6842,6858,6875,6892,7105,7319,7532,7746,7960,8173,8387,8600,8814,9027,9241,9455,9668,10222,10776,11330,11884,12438,12992,13546,14099,14947,15794,16641,17488,18335,19806,21276,22747,24218,25689,27542,29395,31248,33101,34954,36291,37629,38966,40304,41641,41925,42209,42492,42776,43060,44516,45972,47427,48883,50339,51109,51879,52650,53420,54190,54960,55731,56501,57271,58041,58812,59582,60352,60687,61023,61358,61693,62029,62364,62699,63035,63370],
+    700000:[6726,6765,6805,6844,6883,6923,6962,7001,7041,7080,7098,7116,7134,7151,7169,7187,7205,7223,7241,7259,7277,7294,7312,7330,7348,7366,7384,7402,7631,7860,8090,8319,8548,8777,9006,9236,9465,9694,9923,10153,10382,10977,11572,12167,12762,13357,13952,14547,15142,16051,16961,17870,18780,19689,21262,22834,24407,25979,27551,29539,31526,33513,35500,37488,38922,40357,41791,43226,44660,44965,45269,45573,45877,46182,47743,49304,50865,52426,53987,54813,55639,56466,57292,58118,58944,59770,60596,61422,62249,63075,63901,64727,65087,65446,65806,66165,66525,66885,67244,67604,67963],
+    800000:[7193,7235,7277,7319,7361,7403,7445,7487,7529,7571,7591,7610,7629,7648,7667,7686,7705,7724,7744,7763,7782,7801,7820,7839,7858,7877,7897,7916,8160,8405,8650,8895,9140,9384,9629,9874,10119,10363,10608,10853,11098,11738,12378,13018,13659,14299,14939,15579,16220,17180,18141,19102,20063,21024,23180,25336,27491,29647,31802,34104,36405,38706,41007,43309,44970,46631,48292,49952,51613,51965,52318,52670,53022,53374,55182,56990,58798,60606,62414,63370,64327,65283,66240,67196,68152,69109,70065,71022,71978,72935,73891,74848,75263,75679,76095,76511,76927,77342,77758,78174,78590],
+    1000000:[8132,8180,8227,8275,8323,8370,8418,8465,8513,8560,8582,8604,8625,8647,8668,8690,8712,8733,8755,8776,8798,8820,8841,8863,8885,8906,8928,8949,9226,9502,9779,10055,10332,10608,10884,11161,11437,11714,11990,12267,12543,13262,13981,14700,15418,16137,16856,17575,18294,19393,20491,21590,22689,23788,25666,27543,29421,31299,33176,35569,37963,40356,42749,45142,46869,48597,50324,52051,53778,54145,54511,54877,55244,55610,57490,59370,61250,63130,65010,66005,66999,67994,68989,69984,70978,71973,72968,73963,74958,75952,76947,77942,78375,78808,79241,79674,80107,80540,80973,81406,81839],
+    1200000:[8842,8894,8945,8997,9049,9100,9152,9204,9256,9307,9331,9354,9378,9401,9425,9448,9472,9495,9518,9542,9565,9589,9612,9636,9659,9683,9706,9730,10030,10330,10631,10931,11232,11532,11833,12133,12433,12734,13034,13335,13635,14417,15198,15979,16761,17542,18324,19105,19886,21081,22276,23470,24665,25859,27891,29923,31955,33986,36018,38616,41214,43812,46411,49009,50884,52759,54634,56509,58384,58782,59180,59578,59976,60374,62415,64455,66496,68537,70578,71658,72738,73818,74898,75978,77058,78138,79218,80298,81378,82458,83538,84618,85088,85558,86028,86499,86969,87439,87909,88379,88849],
+    1500000:[10025,10084,10142,10201,10260,10318,10377,10435,10494,10553,10579,10606,10633,10659,10686,10713,10739,10766,10793,10819,10846,10873,10899,10926,10952,10979,11006,11032,11373,11713,12053,12394,12734,13074,13414,13755,14095,14435,14775,15116,15456,16342,17227,18113,18999,19885,20770,21656,22542,23896,25250,26604,27958,29313,31602,33891,36180,38469,40758,43699,46639,49579,52519,55459,57581,59703,61825,63947,66069,66519,66969,67419,67869,68320,70629,72939,75249,77558,79868,81090,82312,83534,84756,85978,87200,88422,89645,90867,92089,93311,94533,95755,96287,96819,97351,97883,98415,98947,99479,100011,100543]
+  }
+};
+TU_EXACT={
+  500000:{
+    500000:{P:[1980,3190,4422,7370],A:[770,990,1595,2211,3685]},
+    1000000:{P:[3080,4950,6930,11550],A:[1210,1540,2475,3465,5775]},
+    1500000:{P:[3850,6160,8844,14740],A:[1540,1925,3080,4422,7370]}
+  },
+  800000:{
+    700000:{P:[1760,2750,4224,7040],A:[660,880,1375,2112,3520]},
+    1200000:{P:[2530,4070,6336,10560],A:[990,1265,2035,3168,5280]},
+    1700000:{P:[3300,5170,8184,13640],A:[1320,1650,2585,4092,6820]},
+    2200000:{P:[3960,6160,9834,16390],A:[1540,1980,3080,4917,8195]}
+  }
+};
+function mcAgeIdx(a){return Math.min(a,100);}
+function tuPrimAB(a){return a<=44?0:a<=54?1:a<=60?2:3;}
+function tuAddAB(a){return a<=17?0:a<=44?1:a<=54?2:a<=60?3:4;}
+function tuAB(a){return tuPrimAB(a);}
+function ffAgeIdx(a){return Math.min(a,100);}
+function calcMC(){
+  const name=document.getElementById('mc-name').value||'Client';
+  const mob=document.getElementById('mc-mob').value||'';
+  const zone=parseInt(document.getElementById('mc-zone').value)||1;
+  const si=parseInt(document.getElementById('mc-si').value)||500000;
+  const ages=getMemberAges('mc');
+  const mnames=getMemberNames('mc');
+  if(!ages.length)return showToast('⚠️ कमीत कमी 1 member चे DOB टाका');
+  if(!NMC_RATES[zone]||!NMC_RATES[zone][si])return showToast('⚠️ SI निवडा');
+  let baseTotal=0;
+  const memPremsArr=[];
+  ages.forEach(age=>{
+    const r=NMC_RATES[zone][si][Math.min(age,100)]||0;
+    memPremsArr.push(r);
+    baseTotal+=r;
+  });
+  const memberLabels=['Self','Spouse','Child 1','Child 2','Child 3','Child 4'];
+  const rows=[];
+  ages.forEach((age,i)=>{
+    const lbl=mnames[i]||(memberLabels[i]||'Member '+(i+1));
+    rows.push({l:'👤 '+(i+1)+'. '+lbl+' — वय '+age,v:memPremsArr[i]});
+  });
+  if(ages.length>1)rows.push({l:'Base Total ('+ages.length+' members)',v:baseTotal});
+  rows.push({l:'Annual Premium (GST वगळून)',v:baseTotal,bold:true});
+  LD.mc={name,mob,si,zone:'Zone '+zone,plan:'Mediclaim',freq:'Annual',prem:baseTotal,pt:1,
+    ages,members:ages,memberNames:mnames,memberPrems:memPremsArr,discountRows:[]};
+  showResult('mc',baseTotal,bdR(rows),
+    ['New India Mediclaim Policy | UIN: NIAHLIP25040V082425',
+     ages.length+' Member(s) | Zone '+(zone===1?'1 (MH/GJ)':'2 (Rest of India)')+' | SI ₹'+fmtL(si)+'/person',
+     'प्रत्येक member च्या Exact वयाचे rate',
+     'Cashless Hospitalization | Network Hospitals',
+     'Pre-Hospitalization: 30 days | Post-Hospitalization: 60 days',
+     'Day Care: 141+ procedures | Cumulative Bonus: +5%/year',
+     'AYUSH covered | Long Term: 2yr −5%, 3yr −7%'],
+    ages.length+' Member(s) | Zone '+zone+' | SI ₹'+fmtL(si));
+}
+function calcTU(){
+  const name=document.getElementById('tu-name').value||'Client';
+  const mob=document.getElementById('tu-mob').value||'';
+  const si=parseInt(document.getElementById('tu-si').value)||500000;
+  const ded=parseInt(document.getElementById('tu-ded').value)||500000;
+  const ages=getMemberAges('tu');
+  const mnames=getMemberNames('tu');
+  if(!ages.length)return showToast('⚠️ कमीत कमी 1 member चे DOB टाका');
+  if(!TU_EXACT[ded]||!TU_EXACT[ded][si])return showToast('⚠️ Threshold / SI combination उपलब्ध नाही');
+  const tbl=TU_EXACT[ded][si];
+  const memPremsArr=ages.map((age,i)=>{
+    if(i===0){const ab=age<=44?0:age<=54?1:age<=60?2:3;return tbl.P[ab]||0;}
+    else{const ab=age<=17?0:age<=44?1:age<=54?2:age<=60?3:4;return tbl.A[ab]||0;}
+  });
+  const baseTotal=memPremsArr.reduce((a,b)=>a+b,0);
+  const memberLabels=['Self/Proposer','Spouse','Child 1','Child 2','Child 3','Child 4'];
+  const dedL='₹'+fmtL(ded);
+  const siL='₹'+fmtL(si);
+  const rows=[];
+  ages.forEach((age,i)=>{
+    const lbl=mnames[i]||(memberLabels[i]||'Member '+(i+1));
+    const typ=i===0?'Primary':'Additional';
+    rows.push({l:'👤 '+(i+1)+'. '+lbl+' — वय '+age+' ('+typ+')',v:memPremsArr[i]});
+  });
+  if(ages.length>1)rows.push({l:'Base Total ('+ages.length+' members)',v:baseTotal});
+  rows.push({l:'Annual Premium (GST वगळून)',v:baseTotal,bold:true});
+  LD.tu={name,mob,si,ded,plan:'Top-Up',freq:'Annual',prem:baseTotal,pt:1,
+    ages,members:ages,memberNames:mnames,memberPrems:memPremsArr,discountRows:[]};
+  showResult('tu',baseTotal,bdR(rows),
+    ['New India Top-Up Mediclaim | UIN: NIAHLIP25050V032425',
+     ages.length+' Member(s) | Deductible '+dedL+' | Top-Up SI '+siL,
+     'Existing policy नंतर activate होते | Member 1=Primary, बाकी=Additional',
+     'Network Hospitals Cashless | Tax benefit u/s 80D',
+     'Exact rates — NIA Chart w.e.f. 01-Nov-2024'],
+    ages.length+' Member(s) | Ded '+dedL+' | Top-Up '+siL);
+}
+
+
+
+
+// ============ CRM ============
+let leads=[];
+let crmFilter='all';
+let _db = null;
+
+// ══════════════════════════════════════════════
+// STORAGE: window.name (refresh) + localStorage + IndexedDB
+// ══════════════════════════════════════════════
+
+function saveLS(){
+  try{
+    const json = JSON.stringify(leads);
+    // 1. window.name — survives refresh in same tab
+    try{
+      const wdata = JSON.parse(window.name||'{}');
+      wdata['nia-leads'] = json;
+      window.name = JSON.stringify(wdata);
+    }catch(e){ window.name = JSON.stringify({'nia-leads':json}); }
+    // 2. localStorage
+    try{ localStorage.setItem('nia-leads', json); }catch(e){}
+    // 3. IndexedDB
+    if(_db){ try{
+      const tx = _db.transaction('kv','readwrite');
+      tx.objectStore('kv').put(json,'leads');
+    }catch(e){} }
+  }catch(e){ console.error('saveLS:',e); }
+}
+
+function getLeadsFromStorage(){
+  const sources = [];
+  // Source 1: window.name
+  try{
+    const wdata = JSON.parse(window.name||'{}');
+    const v = wdata['nia-leads'];
+    if(v){ const p=JSON.parse(v); if(Array.isArray(p)&&p.length>0) sources.push(p); }
+  }catch(e){}
+  // Source 2: localStorage
+  try{
+    const v = localStorage.getItem('nia-leads');
+    if(v){ const p=JSON.parse(v); if(Array.isArray(p)&&p.length>0) sources.push(p); }
+  }catch(e){}
+  // Return whichever has most data
+  if(sources.length===0) return [];
+  return sources.reduce((a,b)=>a.length>=b.length?a:b);
+}
+
+function openDB(){
+  return new Promise((res)=>{
+    try{
+      const req = indexedDB.open('NIA_CRM',2);
+      req.onupgradeneeded = e=>{
+        const db=e.target.result;
+        if(!db.objectStoreNames.contains('kv'))
+          db.createObjectStore('kv');
+      };
+      req.onsuccess = e=>{ _db=e.target.result; res(true); };
+      req.onerror   = ()=>res(false);
+    }catch(e){ res(false); }
+  });
+}
+
+function loadFromIndexedDB(){
+  return new Promise(res=>{
+    if(!_db){res(null);return;}
+    try{
+      const tx=_db.transaction('kv','readonly');
+      const req=tx.objectStore('kv').get('leads');
+      req.onsuccess=()=>{
+        try{
+          const p=JSON.parse(req.result||'null');
+          res(Array.isArray(p)&&p.length>0?p:null);
+        }catch(e){res(null);}
+      };
+      req.onerror=()=>res(null);
+    }catch(e){res(null);}
+  });
+}
+
+async function initLeads(){
+  // Step 1: Load from window.name + localStorage immediately (sync)
+  const sync = getLeadsFromStorage();
+  if(sync.length>0){ leads=sync; renderLeads(); updDash(); }
+
+  // Step 2: Try IndexedDB (async)
+  try{ await openDB(); }catch(e){}
+  const fromDB = await loadFromIndexedDB();
+
+  // Use whichever source has most leads
+  const best = [leads, fromDB||[]].reduce((a,b)=>a.length>=b.length?a:b);
+  if(best.length > leads.length){
+    leads = best;
+    // Sync back to fast storage
+    saveLS();
+  }
+  renderLeads();
+  updDash();
+}
+
+function genId(){return'L'+Date.now()+Math.random().toString(36).slice(2,5).toUpperCase();}
+
+function openModal(id,calcKey){
+  const d=calcKey&&LD[calcKey];
+  const planMap={yv:'Yuva Bharat '+(d?.plan||'Basic'),ff:'Family Floater',ak:'Asha Kiran',sc:'Senior Citizen',cc:'Criti Protect',mc:'NI Mediclaim',tu:'NI Top-Up'};
+  const siMap={500000:'5L',1000000:'10L',1500000:'15L',2000000:'20L',2500000:'25L',5000000:'50L',7500000:'75L',10000000:'1 Cr',200000:'2L',300000:'3L',800000:'8L',100000:'1L',150000:'1.5L'};
+  document.getElementById('mo-ttl').textContent=id?'Lead Edit करा':'Lead Save करा';
+  if(id){
+    const l=leads.find(x=>x.id===id);if(!l)return;
+    document.getElementById('ml-name').value=l.name||'';
+    document.getElementById('ml-mob').value=l.mob||'';
+    document.getElementById('ml-email').value=l.email||'';
+    document.getElementById('ml-plan').value=l.plan||'Yuva Bharat Basic';
+    document.getElementById('ml-si').value=l.si||'25L';
+    document.getElementById('ml-prem').value=l.prem||'';
+    document.getElementById('ml-fu').value=l.fu||'';
+    document.getElementById('ml-note').value=l.note||'';
+    document.getElementById('ml-id').value=l.id;
+    document.getElementById('ml-qd').value=l.qd||'';
+    setSt(l.status||'pending');
+  } else {
+    const autoName=d?.name&&d.name!=='Client'?d.name:'';
+    const autoMob=d?.mob||'';
+    document.getElementById('ml-name').value=autoName;
+    document.getElementById('ml-mob').value=autoMob;
+    document.getElementById('ml-email').value='';
+    document.getElementById('ml-plan').value=calcKey?planMap[calcKey]:'Yuva Bharat Basic';
+    document.getElementById('ml-si').value=d?siMap[d.si]||'25L':'25L';
+    document.getElementById('ml-prem').value=d?Math.round(d.prem):'';
+    document.getElementById('ml-fu').value='';
+    document.getElementById('ml-note').value='';
+    document.getElementById('ml-id').value='';
+    document.getElementById('ml-qd').value=todayStr();
+    setSt('pending');
+    setTimeout(()=>{
+      if(!autoName) document.getElementById('ml-name').focus();
+      else if(!autoMob) document.getElementById('ml-mob').focus();
+      else document.getElementById('ml-fu').focus();
+    },150);
+  }
+  // Store calcKey so saveLead can grab LD data
+  const ckEl = document.getElementById('ml-calckey');
+  if(ckEl) ckEl.value = calcKey || '';
+  document.getElementById('lead-mo').classList.add('on');
+  document.body.style.overflow='hidden';
+}
+function closeModal(){document.getElementById('lead-mo').classList.remove('on');document.body.style.overflow='';}
+
+function setSt(s){
+  document.getElementById('ml-st').value=s;
+  ['p','d','l'].forEach(x=>document.getElementById('sb-'+x).classList.remove('on','pend','done','lost'));
+  const map={pending:{id:'sb-p',cls:'pend'},done:{id:'sb-d',cls:'done'},lost:{id:'sb-l',cls:'lost'}};
+  const m=map[s];if(m){document.getElementById(m.id).classList.add('on',m.cls);}
+}
+
+
+function saveLeadQuick(calcKey) {
+  // Called directly from calculator Save button
+  const d = LD[calcKey];
+  if(!d || !d.prem) return showToast('⚠️ आधी Calculate करा');
+  
+  // Create a temporary lead with all calculator data
+  window._pendingCalcData = {
+    calcKey,
+    members:     [...(d.members || d.ages || [])],
+    memberNames: [...(d.memberNames || [])],
+    memberPrems: [...(d.memberPrems || [])],
+    discountRows: (d.discountRows || []).map(r => ({...r})),
+    zone: d.zone, freq: d.freq, pt: d.pt || 1,
+    si: d.si, prem: Math.round(d.prem),
+    name: d.name !== 'Client' ? d.name : '',
+    mob: d.mob || ''
+  };
+  openModal(null, calcKey);
+}
+
+function saveLead(){
+  const name=document.getElementById('ml-name').value.trim();
+  const mob=document.getElementById('ml-mob').value.trim();
+  if(!name)return showToast('⚠️ Client नाव टाका');
+  if(!mob)return showToast('⚠️ Mobile टाका');
+  const lid=document.getElementById('ml-id').value||genId();
+  
+  // Get calculator data - from _pendingCalcData (most reliable) or LD
+  const calcKey = document.getElementById('ml-calckey')?.value || '';
+  const pcd = window._pendingCalcData; // Set by saveLeadQuick
+  const ldData = pcd || (calcKey && LD[calcKey] ? LD[calcKey] : null);
+  
+  // Get existing lead if editing
+  const existing = leads.find(x=>x.id===lid);
+  
+  // Members data: pendingCalcData > LD > existing lead (survives refresh)
+  const membersData = {
+    members:     (pcd?.members?.length     ? pcd.members     : null) || 
+                 (LD[calcKey]?.members?.length ? [...(LD[calcKey].members||LD[calcKey].ages||[])] : null) ||
+                 (existing?.members?.length ? existing.members : []),
+    memberNames: (pcd?.memberNames?.length ? pcd.memberNames : null) ||
+                 (LD[calcKey]?.memberNames?.length ? [...LD[calcKey].memberNames] : null) ||
+                 (existing?.memberNames || []),
+    memberPrems: (pcd?.memberPrems?.length ? pcd.memberPrems : null) ||
+                 (LD[calcKey]?.memberPrems?.length ? [...LD[calcKey].memberPrems] : null) ||
+                 (existing?.memberPrems || []),
+    discountRows:(pcd?.discountRows?.length ? pcd.discountRows : null) ||
+                 (LD[calcKey]?.discountRows?.length ? [...LD[calcKey].discountRows] : null) ||
+                 (existing?.discountRows || []),
+    zone:  pcd?.zone  || LD[calcKey]?.zone  || existing?.zone  || '',
+    freq:  pcd?.freq  || LD[calcKey]?.freq  || existing?.freq  || 'Annual',
+    pt:    pcd?.pt    || LD[calcKey]?.pt    || existing?.pt    || 1,
+  };
+  
+  const siMap2={'5L':500000,'10L':1000000,'15L':1500000,'20L':2000000,'25L':2500000,'50L':5000000,'75L':7500000,'1 Cr':10000000,'2L':200000,'3L':300000,'8L':800000,'1L':100000,'1.5L':150000};
+  
+  const l={
+    id:lid, name, mob,
+    email:document.getElementById('ml-email').value.trim(),
+    plan:document.getElementById('ml-plan').value,
+    si:document.getElementById('ml-si').value,
+    prem:document.getElementById('ml-prem').value,
+    status:document.getElementById('ml-st').value,
+    fu:document.getElementById('ml-fu').value,
+    note:document.getElementById('ml-note').value.trim(),
+    qd:document.getElementById('ml-qd').value||todayStr(),
+    upd:todayStr(),
+    members:     membersData.members,
+    memberNames: membersData.memberNames,
+    memberPrems: membersData.memberPrems,
+    discountRows:membersData.discountRows,
+    zone:        membersData.zone,
+    freq:        membersData.freq,
+    pt:          membersData.pt,
+  };
+  
+  // Clear pending data
+  window._pendingCalcData = null;
+  
+  const idx=leads.findIndex(x=>x.id===lid);
+  if(idx>=0){leads[idx]=l;showToast('✅ Lead Update झाली!');}
+  else{leads.unshift(l);showToast('✅ Lead Save झाली!');}
+  saveLS();closeModal();renderLeads();updDash();
+}
+
+function deleteLead(id){
+  if(!confirm('ही Lead delete करायची?'))return;
+  leads=leads.filter(l=>l.id!==id);
+  saveLS();renderLeads();updDash();showToast('🗑️ Lead Delete झाली');
+}
+function qStatus(id,st){
+  const l=leads.find(x=>x.id===id);if(!l)return;
+  l.status=st;l.upd=todayStr();saveLS();renderLeads();updDash();
+  showToast(st==='done'?'🎉 Policy Done!':st==='lost'?'Lead Closed':'Updated');
+}
+
+function setF(f){
+  crmFilter=f;
+  ['all','pending','done','lost','today'].forEach(x=>document.getElementById('f'+x[0]).classList.remove('on'));
+  document.getElementById('f'+f[0]).classList.add('on');
+  renderLeads();
+}
+
+function renderLeads(){
+  const q=document.getElementById('crm-q').value.toLowerCase();
+  let fl=leads.filter(l=>{
+    const ms=!q||l.name.toLowerCase().includes(q)||(l.mob||'').includes(q)||(l.plan||'').toLowerCase().includes(q);
+    const mf=crmFilter==='all'?true:crmFilter==='today'?isPastToday(l.fu)&&l.status==='pending':l.status===crmFilter;
+    return ms&&mf;
+  });
+  const ct=document.getElementById('crm-list');
+  if(!fl.length){ct.innerHTML=`<div class="no-leads"><div>📭</div><p>${q?'कोणताही result नाही':'Lead नाहीत — Calculate करून Save करा!'}</p></div>`;return;}
+  const pc={'Yuva Bharat Basic':'yv','Yuva Bharat Gold':'yv','Yuva Bharat Platinum':'yv','Family Floater':'ff','Asha Kiran':'ak','Senior Citizen':'sc','Criti Protect':'cc'};
+  ct.innerHTML=fl.map(l=>{
+    const pc2=pc[l.plan]||'yv';
+    const due=isPastToday(l.fu)&&l.status==='pending';
+    return`<div class="lc ${l.status}">
+  <div class="lt">
+    <div>
+      <div class="lname">${l.name}</div>
+      <span class="lplan ${pc2}">${l.plan}</span>
+    </div>
+    <span class="sbdg ${l.status}">${l.status==='pending'?'⏳ Pending':l.status==='done'?'✅ Done':'❌ Lost'}</span>
+  </div>
+  <div class="lmeta">
+    <span>📞 ${l.mob}</span>${l.email?`<span>✉️ ${l.email}</span>`:''}
+    <span>💰 SI: ${l.si}</span>
+    <span>📅 ${fmtDate(l.qd)}</span>
+  </div>
+  ${l.prem?`<div class="lprem">Premium: ₹${parseInt(l.prem).toLocaleString('en-IN')} <span style="font-size:11px;font-weight:400;color:#888">+ GST</span></div>`:''}
+  ${l.fu?`<div class="lfu">🔔 Follow-up: ${fmtDate(l.fu)}${due?' ⚠️ DUE':''}</div>`:''}
+  ${l.note?`<div class="lnote">📝 ${l.note}</div>`:''}
+  <div class="la">
+    <button class="lab la-c" onclick="window.open('tel:${l.mob}')">📞 Call</button>
+    <button class="lab la-w" onclick="window.open('https://wa.me/91${l.mob}')">💬 WA</button>
+    <button class="lab la-e" onclick="openModal('${l.id}',null)">✏️ Edit</button>
+    <button class="lab la-pdf" onclick="quickShareLead('${l.id}','wa')">💬 PDF→WA</button>
+    <button class="lab la-pdf" style="background:#EEF5FF;color:#1565C0" onclick="quickShareLead('${l.id}','email')">✉️ PDF→Mail</button>
+    ${l.status!=='done'?`<button class="lab la-ok" onclick="qStatus('${l.id}','done')">✅ Done</button>`:''}
+    ${l.status==='pending'?`<button class="lab la-lo" onclick="qStatus('${l.id}','lost')">❌ Lost</button>`:''}
+    <button class="lab la-del" onclick="deleteLead('${l.id}')">🗑️</button>
+  </div>
+</div>`;}).join('');
+}
+
+function updDash(){
+  document.getElementById('c-tot').textContent=leads.length;
+  document.getElementById('c-pen').textContent=leads.filter(l=>l.status==='pending').length;
+  document.getElementById('c-don').textContent=leads.filter(l=>l.status==='done').length;
+  const due=leads.filter(l=>l.status==='pending'&&isPastToday(l.fu));
+  document.getElementById('c-due').textContent=due.length;
+  const rb=document.getElementById('rbox');
+  const rl=document.getElementById('rlist');
+  if(due.length){rb.classList.add('on');rl.innerHTML=due.slice(0,5).map(l=>`<div class="ri" onclick="openModal('${l.id}',null)"><div class="rin">${l.name} — ${l.plan}</div><div class="rim">📞 ${l.mob} | Follow-up: ${fmtDate(l.fu)} | ₹${parseInt(l.prem||0).toLocaleString('en-IN')}</div></div>`).join('');}
+  else rb.classList.remove('on');
+}
+
+// PDF FROM LEAD — now uses share modal (no print!)
+function genPDFLead(id){ openShareModal(null, id); }
+
+// ONE-CLICK QUICK SHARE FROM CRM LEAD
+function buildMsg(k){
+  const d=LD[k];if(!d)return null;
+  const titles={yv:'Yuva Bharat ('+d.plan+')',ff:'Family Floater',ak:'Asha Kiran',sc:'Senior Citizen',cc:'Criti Protect',mc:'Mediclaim',tu:'Top-Up'};
+  return`🏥 *New India ${titles[k]} Policy*
+━━━━━━━━━━━━━━
+👤 Client: *${d.name}*
+`+(d.mob?`📞 Mobile: ${d.mob}
+`:'')+`💰 SI: *₹${fmtL(d.si)}*
+`+(d.zone?`🗺️ Zone: ${d.zone}
+`:'')+`
+💵 *Premium: ${fmt(d.prem)}*
+_(GST वगळून — GST 18% वेगळा)_
+
+━━━━━━━━━━━━━━
+📞 *${(typeof AP!=='undefined'&&AP.name)||'Devidas Nivrutti Patil'}*
+📱 *${(typeof AP!=='undefined'&&AP.mobile)||'9823438787'}*
+📅 ${new Date().toLocaleDateString('en-IN')}`;
+}
+function waShare(k){const m=buildMsg(k);if(!m)return showToast('⚠️ आधी Calculate करा');window.open('https://wa.me/?text='+encodeURIComponent(m));}
+function doCopy(k){const m=buildMsg(k);if(!m)return showToast('⚠️ आधी Calculate करा');const ta=document.createElement('textarea');ta.value=m;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');showToast('✅ Copy झाले!');}catch(e){showToast('Copy नाही झाले');}document.body.removeChild(ta);}
+
+// ============ PDF ============
+// ============ PDF & SHARE ============
+let currentPDFBlob = null;
+let currentShareKey = null;
+let currentShareLeadId = null;
+
+function buildHTMLContent(data) {
+  const today   = new Date();
+  const dateStr  = today.toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'});
+  const valid    = new Date(today); valid.setDate(valid.getDate()+30);
+  const validStr = valid.toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'});
+  const qDate    = data.qd ? fmtDate(data.qd) : dateStr;
+
+  const memArr   = data.members || data.ages || [];
+  const memNames = data.memberNames  || [];
+  const memPrems = data.memberPrems  || [];
+  // KEY: discountRows has ALL discounts with exact ₹ amounts {l, v, neg}
+  const allDiscs = data.discountRows || [];
+  const feats    = data.feats || [];
+  const prem     = data.prem  || 0;
+
+  const PICONS = ['👤','👥','👶','👶','👶','👶'];
+
+  // ── 1. Member rows ──────────────────────────────────────
+  let tableRows = '';
+
+  memArr.forEach((age, i) => {
+    const mp  = memPrems[i] || 0;
+    const nm  = (memNames[i] || '').toUpperCase();
+    const ic  = PICONS[i] || '👤';
+    const bg  = i % 2 === 0 ? '#FFFFFF' : '#F8F6F3';
+    const label = nm
+      ? `${ic} M${i+1} — ${nm}: वय ${age}`
+      : `${ic} M${i+1}: वय ${age}`;
+
+    tableRows += `
+    <tr>
+      <td style="background:${bg};padding:11px 18px;font-size:14px;color:#222;border-bottom:1px solid #EEEBE6;font-weight:500">
+        ${label}
+      </td>
+      <td style="background:${bg};padding:11px 18px;font-size:15px;font-weight:700;color:#1C1C1E;text-align:right;border-bottom:1px solid #EEEBE6;white-space:nowrap">
+        ${mp ? '₹' + mp.toLocaleString('en-IN') : ''}
+      </td>
+    </tr>`;
+  });
+
+  // ── 2. ALL discount rows from discountRows (has exact amounts) ──
+  allDiscs.forEach(r => {
+    if (r.neg) {
+      // Green discount row
+      const label = r.l.replace('Floater Discount', 'Floater Disc')
+                       .replace('Term Discount', 'Term Disc');
+      tableRows += `
+    <tr>
+      <td style="background:#F0FFF4;padding:10px 18px;font-size:14px;color:#1A7C3E;border-bottom:1px solid #D4EDDA;font-weight:500">
+        ✅ ${label}
+      </td>
+      <td style="background:#F0FFF4;padding:10px 18px;font-size:15px;font-weight:700;color:#1A7C3E;text-align:right;border-bottom:1px solid #D4EDDA;white-space:nowrap">
+        −₹${(r.v||0).toLocaleString('en-IN')}
+      </td>
+    </tr>`;
+    } else {
+      // Red loading row
+      tableRows += `
+    <tr>
+      <td style="background:#FFF5F5;padding:10px 18px;font-size:14px;color:#C0392B;border-bottom:1px solid #F5C6CB;font-weight:500">
+        ⚠️ ${r.l}
+      </td>
+      <td style="background:#FFF5F5;padding:10px 18px;font-size:15px;font-weight:700;color:#C0392B;text-align:right;border-bottom:1px solid #F5C6CB;white-space:nowrap">
+        +₹${(r.v||0).toLocaleString('en-IN')}
+      </td>
+    </tr>`;
+    }
+  });
+
+  // ── 3. Final total row ──────────────────────────────────
+  tableRows += `
+    <tr>
+      <td style="background:linear-gradient(135deg,#C8102E,#8B0D20);padding:14px 18px;font-size:15px;font-weight:800;color:#FFD6A0">
+        Annual Total (GST वगळून)
+      </td>
+      <td style="background:linear-gradient(135deg,#C8102E,#8B0D20);padding:14px 18px;font-size:21px;font-weight:900;color:#FFD6A0;text-align:right;white-space:nowrap">
+        ₹${prem.toLocaleString('en-IN')}
+      </td>
+    </tr>`;
+
+  const breakupSection = memArr.length > 0 ? `
+  <div style="margin-bottom:22px">
+    <div style="font-size:12px;font-weight:900;color:#C8102E;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;padding-left:12px;border-left:5px solid #C8102E">
+      Premium Breakup
+    </div>
+    <table style="width:100%;border-collapse:collapse;border-radius:14px;overflow:hidden;border:2px solid #E0DDD8;box-shadow:0 4px 16px rgba(0,0,0,.09)">
+      <thead>
+        <tr style="background:linear-gradient(135deg,#1C1C2E,#2C2040)">
+          <th style="padding:12px 18px;color:#fff;text-align:left;font-size:13px;font-weight:700">Member / Discount</th>
+          <th style="padding:12px 18px;color:#F5C842;text-align:right;font-size:13px;font-weight:700">Amount</th>
+        </tr>
+      </thead>
+      <tbody>${tableRows}</tbody>
+    </table>
+  </div>` : '';
+
+  // ── Benefits ────────────────────────────────────────────
+  const sections = []; let cur = {title:'Key Benefits', items:[]};
+  feats.forEach(f => {
+    if (f.startsWith('──')) {
+      if (cur.items.length) sections.push(cur);
+      cur = {title: f.replace(/──/g,'').trim(), items:[]};
+    } else cur.items.push(f);
+  });
+  if (cur.items.length) sections.push(cur);
+  const SEC_CLR = ['#E65100','#1565C0','#6A0DAD','#00695C'];
+  const benefitHtml = sections.map((sec,si) => {
+    const col = SEC_CLR[si % SEC_CLR.length];
+    const rows = sec.items.map((f,ii) => `
+      <tr style="background:${ii%2===0?'#fff':'#F9F8F6'}">
+        <td style="padding:10px 18px;font-size:13px;color:#2C2C2E;border-bottom:1px solid #F0EDE8;line-height:1.6">
+          <span style="display:inline-block;background:#E8F5E9;border-radius:5px;padding:2px 6px;font-size:12px;margin-right:8px;vertical-align:middle">✅</span>${f}
+        </td>
+      </tr>`).join('');
+    // Adviser details from AP profile
+  const _ap  = (typeof AP !== 'undefined') ? AP : {};
+  const _n   = _ap.name         || 'Devidas Nivrutti Patil';
+  const _m   = _ap.mobile       || '9823438787';
+  const _br  = _ap.branch       || 'New India Assurance Co. Ltd.';
+  const _des = _ap.designation  || 'Authorised Insurance Adviser';
+  const _ph  = _ap.photo        || '';
+  const _st  = _ap.stamp        || '';
+
+  return `
+    <div style="margin-bottom:16px;border-radius:14px;overflow:hidden;border:2px solid #E0DDD8;box-shadow:0 3px 10px rgba(0,0,0,.07)">
+      <div style="background:${col};padding:12px 18px;font-size:13px;font-weight:800;color:#fff">🏆 ${sec.title}</div>
+      <table style="width:100%;border-collapse:collapse">${rows}</table>
+    </div>`;
+  }).join('');
+
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Arial,Helvetica,sans-serif;background:#F0EEE9;color:#1C1C1E;width:780px}
+.pg{width:780px;background:#F0EEE9}
+
+/* ══ PROFILE ══ */
+.pf-row{display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid #F8F6F4;cursor:pointer;-webkit-tap-highlight-color:rgba(0,0,0,.04);transition:background .1s}
+.pf-row:last-of-type{border-bottom:none}
+.pf-row:active{background:#FFF5F5}
+.pf-icon-box{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.pf-content{flex:1;min-width:0}
+.pf-lbl{font-size:10.5px;color:#bbb;font-weight:600;margin-bottom:1px}
+.pf-val{font-size:14px;font-weight:600;color:#1a1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pf-val.empty{color:#ccc;font-weight:400}
+.pf-arr{font-size:20px;color:#ddd;font-weight:300;flex-shrink:0}
+.pf-edit-row{display:none;padding:10px 16px 14px;background:#FFFAF9;border-bottom:1px solid #F0EDE8}
+.pf-inp{width:100%;border:2px solid #C8102E;border-radius:10px;padding:10px 13px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;background:#fff}
+.pf-btns{display:flex;gap:8px;margin-top:8px}
+.pf-save{flex:1;background:#C8102E;color:#fff;border:none;border-radius:9px;padding:10px;font-size:13px;font-weight:700;cursor:pointer}
+.pf-cancel{background:#F0EDE8;color:#666;border:none;border-radius:9px;padding:10px 14px;font-size:13px;font-weight:600;cursor:pointer}
+.pf-del{background:#FFF0F0;color:#C8102E;border:none;border-radius:9px;padding:10px 12px;font-size:13px;font-weight:700;cursor:pointer}
+</style>
+</head><body><div class="pg">
+
+<!-- HEADER -->
+<div style="background:linear-gradient(150deg,#BE0C27 0%,#8F0A1C 45%,#630816 100%);padding:30px 28px 24px;position:relative;overflow:hidden">
+  <div style="position:absolute;top:-60px;right:-60px;width:240px;height:240px;background:rgba(255,255,255,.04);border-radius:50%"></div>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:1">
+    <div>
+      <div style="font-size:28px;font-weight:900;color:#fff;letter-spacing:-.5px">${_br}</div>
+      <div style="font-size:12.5px;color:rgba(255,255,255,.75);margin-top:5px">India's No.1 General Insurance — Govt. of India Enterprise</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:2px">IRDAI Reg. No. 190 | Estd. 1919 | CIN: L66000MH1919GOI000526</div>
+      <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+        <span style="background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:700;color:#fff">🏥 Health Insurance</span>
+        <span style="background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:700;color:#fff">📋 Premium Quotation</span>
+        <span style="background:rgba(245,200,66,.22);border:1px solid rgba(245,200,66,.4);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:700;color:#F5C842">🔒 Personal & Confidential</span>
+      </div>
+    </div>
+    <div style="background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.22);border-radius:18px;padding:16px 22px;text-align:center;flex-shrink:0">
+      <div style="font-size:34px;font-weight:900;color:#fff;letter-spacing:3px">NIA</div>
+      <div style="font-size:9.5px;color:rgba(255,255,255,.5);letter-spacing:1.5px;margin-top:4px">INSURES</div>
+    </div>
+  </div>
+</div>
+
+<!-- PLAN STRIP -->
+<div style="background:#fff;border-left:6px solid #C8102E;padding:16px 28px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 3px 12px rgba(0,0,0,.08)">
+  <div>
+    <div style="font-size:19px;font-weight:900;color:#C8102E">New India ${data.title}</div>
+    <div style="font-size:12.5px;color:#666;margin-top:5px">📅 Quote Date: ${qDate}</div>
+  </div>
+  <div style="text-align:right">
+    <div style="font-size:12px;font-weight:700;color:#28A745">✅ Valid Till</div>
+    <div style="font-size:15px;font-weight:900;color:#1C1C1E">${validStr}</div>
+  </div>
+</div>
+
+<!-- BODY -->
+<div style="padding:20px 24px 26px">
+
+  <!-- CLIENT CARD -->
+  <div style="background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.09);border:1.5px solid #E8E5E0;margin-bottom:20px">
+    <div style="padding:18px 22px;border-bottom:2px solid #F0EDE8;display:flex;align-items:center;gap:16px">
+      <div style="width:54px;height:54px;background:linear-gradient(135deg,#C8102E,#8B0D20);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:900;color:#fff;flex-shrink:0">${data.name ? data.name[0].toUpperCase() : 'C'}</div>
+      <div>
+        <div style="font-size:20px;font-weight:900;color:#1C1C1E">${data.name}</div>
+        <div style="font-size:12.5px;color:#666;margin-top:3px">Insurance Proposal — Prepared Exclusively For You</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap">
+      ${data.mob ? `<div style="flex:1;min-width:150px;padding:13px 22px;border-right:1px solid #E8E5E0"><div style="font-size:10px;font-weight:800;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">📞 Mobile</div><div style="font-size:16px;font-weight:700;color:#1C1C1E">${data.mob}</div></div>` : ''}
+      <div style="flex:1;min-width:150px;padding:13px 22px${data.zone?';border-right:1px solid #E8E5E0':''}"><div style="font-size:10px;font-weight:800;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">💰 Sum Insured</div><div style="font-size:18px;font-weight:900;color:#C8102E">₹${data.siStr}</div></div>
+      ${data.zone ? `<div style="flex:1;min-width:150px;padding:13px 22px;border-right:1px solid #E8E5E0"><div style="font-size:10px;font-weight:800;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">🗺️ Zone</div><div style="font-size:16px;font-weight:700;color:#1C1C1E">Zone ${data.zone}</div></div>` : ''}
+      ${data.freq ? `<div style="flex:1;min-width:150px;padding:13px 22px"><div style="font-size:10px;font-weight:800;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">📅 Payment Mode</div><div style="font-size:16px;font-weight:700;color:#1C1C1E">${data.freq}</div></div>` : ''}
+    </div>
+  </div>
+
+  <!-- PREMIUM HERO -->
+  <div style="background:linear-gradient(145deg,#0D1B2A 0%,#182940 55%,#0D1B2A 100%);border-radius:18px;padding:26px 26px 22px;margin-bottom:22px;position:relative;overflow:hidden;box-shadow:0 10px 30px rgba(13,27,42,.45)">
+    <div style="position:absolute;top:-40px;right:-40px;width:180px;height:180px;background:radial-gradient(circle,rgba(245,200,66,.14),transparent);border-radius:50%"></div>
+    <div style="position:relative;z-index:1">
+      <div style="font-size:11.5px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Your Premium Amount</div>
+      <div style="font-size:54px;font-weight:900;color:#F5C842;letter-spacing:-2px;line-height:1">₹${prem.toLocaleString('en-IN')}</div>
+      <div style="font-size:12.5px;color:rgba(255,255,255,.45);margin-top:7px;margin-bottom:20px">GST applicable as per Govt. norms • Contact your adviser for exact premium</div>
+      <div style="display:flex;gap:12px">
+        <div style="flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px 14px">
+          <div style="font-size:10px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Policy Term</div>
+          <div style="font-size:16px;font-weight:800;color:#4CD964">${data.pt ? data.pt+' Year'+(data.pt>1?'s':'') : '1 Year'}</div>
+        </div>
+        <div style="flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px 14px">
+          <div style="font-size:10px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Members Covered</div>
+          <div style="font-size:16px;font-weight:800;color:#F5C842">${memArr.length||1} ${(memArr.length||1)>1?'Members':'Member'}</div>
+        </div>
+        <div style="flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px 14px">
+          <div style="font-size:10px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Plan Type</div>
+          <div style="font-size:14px;font-weight:800;color:#fff">${data.title ? data.title.split(/\s+/).pop() : '—'}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PREMIUM BREAKUP -->
+  ${breakupSection}
+
+  <!-- BENEFITS -->
+  ${benefitHtml}
+
+  <!-- ADVISER CARD -->
+  <div style="background:linear-gradient(145deg,#161626 0%,#261E3C 100%);border-radius:18px;padding:24px 26px;box-shadow:0 8px 24px rgba(22,22,38,.4)">
+    <div style="font-size:10px;font-weight:900;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1px;margin-bottom:16px">Your Insurance Adviser</div>
+    <div style="display:flex;gap:20px;align-items:center">
+      <div style="width:68px;height:68px;background:linear-gradient(135deg,#C8102E,#8B0D20);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:30px;flex-shrink:0">${_ph?'<img src="'+_ph+'" style="width:100%;height:100%;object-fit:cover;border-radius:18px">':'👨‍💼'}</div>
+      <div style="flex:1">
+        <div style="font-size:22px;font-weight:900;color:#fff">${_n}</div>
+        <div style="font-size:12.5px;color:rgba(255,255,255,.6);margin-top:3px">${_des} • ${_br}</div>
+        <div style="margin-top:14px;display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+          <div style="background:rgba(245,200,66,.12);border:2px solid rgba(245,200,66,.3);border-radius:12px;padding:10px 20px">
+            <div style="font-size:9.5px;color:rgba(255,255,255,.45);letter-spacing:.6px;margin-bottom:4px">📞 CALL / WHATSAPP</div>
+            <div style="font-size:22px;font-weight:900;color:#F5C842;letter-spacing:.5px">${_m}</div>
+          </div>
+          <div>
+            <div style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:7px 14px;font-size:12px;font-weight:700;color:#fff;display:inline-block;margin-bottom:7px">🏢 ${_br}</div>
+            <div style="font-size:11.5px;color:rgba(255,255,255,.4)">Govt. of India Enterprise | Since 1919</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.3);margin-top:3px">1800-209-1415 | www.newindia.co.in</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<div style="background:#E4E1DC;border-top:2px solid #D0CCC6;padding:16px 28px">
+  <p style="font-size:11px;color:#777;line-height:1.9;text-align:center">
+    <strong style="color:#555">Disclaimer:</strong> This is a premium quotation for reference only. Final premium is subject to NIA underwriting norms and confirmation on portal. Pre-existing conditions may affect premium. All terms & conditions apply as per policy document.<br>
+    📞 NIA Toll Free: <strong style="color:#444">1800-209-1415</strong> | 🌐 <strong style="color:#444">www.newindia.co.in</strong> | IRDAI Reg. No. 190 | UIN: NIAHLIP25059V032425
+  </p>
+</div>
+
+</div></body></html>`;
+}
+
+function memTableRows_icon(i){
+  return ['👤','👩','👦','👧','👦','👧'][i]||'👤';
+}
+
+
+async function htmlToBlob(htmlStr) {
+  return new Promise((resolve) => {
+    // Use a div wrapper - more reliable than iframe on mobile
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = 'position:fixed;left:-9999px;top:0;width:780px;z-index:-1;background:#F0EEE9;pointer-events:none';
+    const failsafe=setTimeout(()=>{try{document.body.removeChild(wrapper);}catch(_){}},10000);
+    wrapper.innerHTML = htmlStr;
+    document.body.appendChild(wrapper);
+
+    setTimeout(async () => {
+      try {
+        const fullH = wrapper.scrollHeight || 800;
+        const canvas = await html2canvas(wrapper, {
+          scale: 2.5,
+          useCORS: true,
+          allowTaint: true,
+          width: 780,
+          height: fullH,
+          windowWidth: 780,
+          backgroundColor: '#F0EEE9',
+          logging: false
+        });
+
+        const { jsPDF } = window.jspdf;
+        const mmW = 210;
+        const mmH = Math.ceil((canvas.height / canvas.width) * mmW);
+        const doc = new jsPDF({ unit:'mm', format:[mmW, mmH], orientation:'portrait', compress:true });
+        doc.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, mmW, mmH);
+
+        clearTimeout(failsafe);document.body.removeChild(wrapper);
+        resolve(doc.output('blob'));
+      } catch(err) {
+        console.error('PDF err:', err);
+        clearTimeout(failsafe);try{document.body.removeChild(wrapper);}catch(_){}
+        resolve(null);
+      }
+    }, 800);
+  });
+}
+
+
+
+function openShareModal(key, leadId) {
+  currentShareKey = key;
+  currentShareLeadId = leadId;
+  const d = leadId ? leads.find(l=>l.id===leadId) : LD[key];
+  if (!d) return showToast('⚠️ आधी Calculate करा');
+  const name = leadId ? d.name : d.name;
+  document.getElementById('share-ttl').textContent = `${name} — Quote Share करा`;
+  document.getElementById('share-mo').classList.add('on');
+  document.getElementById('gen-prog').style.display = 'block';
+  document.getElementById('share-btns').style.display = 'none';
+  currentPDFBlob = null;
+
+  // Build data object
+  let data;
+  if (leadId) {
+    const l = d;
+    const featsForPlan = {
+      'Yuva Bharat Basic':yvFeats('B',500000),'Yuva Bharat Gold':yvFeats('G',500000),
+      'Yuva Bharat Platinum':yvFeats('P',500000),
+      'Family Floater':['Family Floater — एकच SI सर्वांसाठी','Cashless Hospitalization','Day Care: 541+ procedures'],
+      'Asha Kiran':['मुलगी असलेल्या कुटुंबांसाठी','Critical Care Benefit','Personal Accident Cover'],
+      'Senior Citizen':['वय 60+ साठी','⚠️ Co-payment 20%','Free Annual Health Check-up'],
+      'Criti Protect':['Lump Sum benefit on diagnosis','Cancer, Heart Attack, Stroke','Tax Benefit: 80D'],
+      'NI Mediclaim':['Individual SI per person','Cashless Hospitalization','Day Care: 141+ procedures covered','AYUSH Treatment covered'],
+      'NI Top-Up':['Extra cover over existing policy','Portable across insurers','Tax benefit u/s 80D','No claim bonus']
+    };
+    const prem2=parseInt(l.prem)||0;
+    const siNum2={'5L':500000,'10L':1000000,'15L':1500000,'20L':2000000,'25L':2500000,'50L':5000000,'75L':7500000,'1 Cr':10000000,'2L':200000,'3L':300000,'8L':800000,'1L':100000,'1.5L':150000}[l.si]||500000;
+    const planKey2=l.plan&&l.plan.includes('Basic')?'B':l.plan&&l.plan.includes('Gold')?'G':l.plan&&l.plan.includes('Platinum')?'P':'B';
+    const ldKey2={'Yuva Bharat Basic':'yv','Yuva Bharat Gold':'yv','Yuva Bharat Platinum':'yv','Family Floater':'ff','Asha Kiran':'ak','Senior Citizen':'sc','Criti Protect':'cc','NI Mediclaim':'mc','NI Top-Up':'tu'}[l.plan]||'yv';
+    const ldSrc2=LD[ldKey2];
+    const useLD2=(!l.members||l.members.length===0)&&ldSrc2&&ldSrc2.memberPrems&&ldSrc2.memberPrems.length>0;
+    const hasLeadData2 = l.members&&l.members.length>0&&l.memberPrems&&l.memberPrems.length>0;
+    const hasLDData2   = ldSrc2&&ldSrc2.memberPrems&&ldSrc2.memberPrems.length>0;
+    const mbrs2   = hasLeadData2?l.members    :hasLDData2?(ldSrc2.members||ldSrc2.ages||[]):[];
+    const mnames2 = hasLeadData2?l.memberNames:hasLDData2?(ldSrc2.memberNames||[])         :[];
+    const mprems2 = hasLeadData2?l.memberPrems:hasLDData2?(ldSrc2.memberPrems||[])         :[];
+    const drows2  = hasLeadData2?l.discountRows:hasLDData2?(ldSrc2.discountRows||[])       :[];
+    data={title:l.plan+' Policy',name:l.name,mob:l.mob,
+      si:siNum2,siStr:l.si,prem:prem2,qd:l.qd,
+      zone:useLD2?(ldSrc2.zone||''):(l.zone||''),
+      freq:useLD2?(ldSrc2.freq||'Annual'):(l.freq||'Annual'),
+      pt:useLD2?(ldSrc2.pt||1):(l.pt||1),
+      discounts:[],discountRows:drows2,
+      members:mbrs2,ages:mbrs2,memberNames:mnames2,memberPrems:mprems2,
+      feats:featsForPlan[l.plan.includes('Yuva')?'Yuva Bharat '+planKey2:l.plan]||featsForPlan[l.plan]||[]};
+  } else {
+    const titles={yv:'Yuva Bharat Health Policy ('+d.plan+' Plan)',ff:'Family Floater Mediclaim',ak:'Asha Kiran Policy',sc:'Senior Citizen Mediclaim',cc:'Criti Protect Policy',mc:'New India Mediclaim Policy',tu:'New India Top-Up Policy'};
+    const feats={yv:yvFeats(d.plan==='Basic'?'B':d.plan==='Gold'?'G':'P',d.si),ff:['Family Floater SI: ₹'+fmtL(d.si),'Cashless Hospitalization','Day Care: 541+','Cumulative Bonus: 10%/yr'],ak:['मुलगी असलेल्या कुटुंबांसाठी','Critical Care Benefit','Personal Accident Cover'],sc:['वय 60+ साठी','⚠️ Co-payment 20%','Free Annual Health Check-up','Cashless Hospitalization'],cc:['Benefit: ₹'+fmtL(d.si)+' Lump Sum','Cancer, Heart Attack, Stroke, Kidney Failure','Worldwide Coverage','Tax Benefit: 80D'],mc:['Individual SI ₹'+fmtL(d.si)+'/person','Cashless Hospitalization','Day Care: 141+ procedures','AYUSH covered'],tu:['Top-Up SI ₹'+fmtL(d.si),'Portable — any insurer','Tax benefit u/s 80D','No claim bonus']};
+    data = {title:titles[key],name:d.name,mob:d.mob||'',age:d.age,zone:d.zone,si:d.si,siStr:fmtL(d.si),freq:d.freq,prem:d.prem,pt:d.pt||1,discounts:d.discounts||[],members:d.members,ages:d.ages,feats:feats[key],memberNames:d.memberNames||[],memberPrems:d.memberPrems||[],discountRows:d.discountRows||[]};
+  }
+
+  const htmlStr = buildHTMLContent(data);
+  // Safety: always show buttons after 15 seconds (in case PDF takes too long)
+  const _safetyTimer = setTimeout(()=>{
+    document.getElementById('gen-prog').style.display='none';
+    document.getElementById('share-btns').style.display='flex';
+    if(!currentPDFBlob) currentPDFBlob=htmlStr;
+  }, 15000);
+  htmlToBlob(htmlStr).then(blob => {
+    clearTimeout(_safetyTimer);
+    document.getElementById('gen-prog').style.display = 'none';
+    document.getElementById('share-btns').style.display = 'flex';
+    if (blob) {
+      currentPDFBlob = blob;
+    } else {
+      // fallback: store html for text share
+      currentPDFBlob = htmlStr;
+    }
+  });
+}
+
+function closeShare() { document.getElementById('share-mo').classList.remove('on'); }
+
+function doShare(type) {
+  const d = currentShareLeadId ? leads.find(l=>l.id===currentShareLeadId) : LD[currentShareKey];
+  if (!d) return;
+  const name = d.name || 'Client';
+  const prem = parseInt(d.prem) || 0;
+  const plan = d.plan || '';
+
+  if (type === 'download') {
+    if (currentPDFBlob instanceof Blob) {
+      const url = URL.createObjectURL(currentPDFBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'NIA_Quote_'+name.replace(/\s/g,'_')+'_'+todayStr()+'.pdf';
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('✅ PDF Download झाली!');
+    } else {
+      showToast('⚠️ PDF generate नाही झाली — Download करा');
+    }
+    closeShare();
+    return;
+  }
+
+  const msg = `🏥 *New India ${plan} Policy*\n👤 Client: *${name}*\n💰 Premium: *₹${prem.toLocaleString('en-IN')}*\n\n📞 Devidas Nivrutti Patil | 9823438787`;
+
+  if (currentPDFBlob instanceof Blob) {
+    // Share via Web Share API (works on Android Chrome)
+    if (navigator.share && navigator.canShare) {
+      const file = new File([currentPDFBlob], 'NIA_Quote_'+name+'.pdf', {type:'application/pdf'});
+      const shareData = { files:[file], text: msg, title: 'NIA Premium Quote — '+name };
+      if (navigator.canShare(shareData)) {
+        navigator.share(shareData).then(()=>{showToast('✅ Shared!');closeShare();}).catch(()=>fallbackShare(type,msg));
+        return;
+      }
+    }
+    fallbackShare(type, msg);
+  } else {
+    fallbackShare(type, msg);
+  }
+}
+
+function fallbackShare(type, msg) {
+  if (type === 'wa') {
+    window.open('https://wa.me/?text='+encodeURIComponent(msg));
+  } else if (type === 'email') {
+    const subject = encodeURIComponent('New India Insurance — Premium Quotation');
+    window.open('mailto:?subject='+subject+'&body='+encodeURIComponent(msg));
+  }
+  showToast('💡 PDF Download करून manually attach करा');
+  closeShare();
+}
+
+// Keep old genPDF for backward compat — now opens share modal
+function genPDF(k) { openShareModal(k, null); }
+function genPDFLead(id) { openShareModal(null, id); }
+
+function quickShareLead(id, type) {
+  const l = leads.find(x=>x.id===id);
+  if(!l) return showToast('⚠️ Lead नाही');
+  const prem = parseInt(l.prem)||0;
+
+  // Build WhatsApp/Email text message
+  const msg = `🏥 *New India ${l.plan} Policy — Premium Quotation*
+`+
+    `━━━━━━━━━━━━━━━━━━━━
+`+
+    `👤 Client: *${l.name}*
+`+
+    `📞 Mobile: ${l.mob}
+`+
+    (l.email?`✉️ Email: ${l.email}
+`:'')+
+    `💰 Sum Insured: *${l.si}*
+`+
+    `💵 Premium: *₹${prem.toLocaleString('en-IN')}* (GST वगळून)
+`+
+    `
+`+
+    `━━━━━━━━━━━━━━━━━━━━
+`+
+    `📞 *${_n}* | *${_m}*
+`+
+    `🏢 ${_br}
+`+
+    `📅 Quote Date: ${fmtDate(l.qd||todayStr())}`;
+
+  // Try PDF generation + Web Share API first
+  showToast('⏳ PDF तयार होत आहे...');
+  
+  // Build HTML for PDF
+  const featsForPlan = {
+    'Yuva Bharat Basic':yvFeats('B',500000),'Yuva Bharat Gold':yvFeats('G',500000),
+    'Yuva Bharat Platinum':yvFeats('P',500000),
+    'Yuva Bharat B':yvFeats('B',500000),'Yuva Bharat G':yvFeats('G',500000),'Yuva Bharat P':yvFeats('P',500000),
+    'Family Floater':['Family Floater — एकच SI सर्वांसाठी','Cashless Hospitalization — PAN India','Pre & Post Hospitalization','Day Care: 541+ procedures','Cumulative Bonus 10%/yr'],
+    'Asha Kiran':['मुलगी असलेल्या कुटुंबांसाठी','Critical Care Benefit: 10% of SI','Personal Accident: 100% of SI','Maternity Benefit (optional)'],
+    'Senior Citizen':['वय 60+ साठी','⚠️ Co-payment: 20%','Free Annual Health Check-up','Cashless Hospitalization'],
+    'Criti Protect':['Lump Sum benefit on diagnosis','Cancer, Heart Attack, Stroke, Kidney Failure','Worldwide Coverage','Tax Benefit: Section 80D'],
+    'NI Mediclaim':['Individual SI per person','Cashless Hospitalization','Day Care: 141+ procedures','AYUSH Treatment covered','Lifelong renewal'],
+    'NI Top-Up':['Extra cover over existing policy','Kicks in after deductible','Portable across insurers','Tax benefit u/s 80D'],
+    'Mediclaim':['Individual SI per person','Cashless Hospitalization','Day Care: 141+ procedures','AYUSH Treatment covered'],
+    'Top-Up':['Extra cover over existing policy','Deductible नंतर active','Portable across insurers','Tax benefit u/s 80D']
+  };
+  const planKey = l.plan && l.plan.includes('Basic')?'B': l.plan && l.plan.includes('Gold')?'G': l.plan && l.plan.includes('Platinum')?'P':'B';
+  const siNum = {'5L':500000,'10L':1000000,'15L':1500000,'20L':2000000,'25L':2500000,'50L':5000000,'75L':7500000,'1 Cr':10000000,'2L':200000,'3L':300000,'8L':800000,'1L':100000,'1.5L':150000}[l.si]||500000;
+
+  // Smart data source: lead saved data → OR → live LD calculator data (if same plan+prem)
+  const ldKey = {'Yuva Bharat Basic':'yv','Yuva Bharat Gold':'yv','Yuva Bharat Platinum':'yv',
+                 'Family Floater':'ff','Asha Kiran':'ak','Senior Citizen':'sc','Criti Protect':'cc',
+                 'NI Mediclaim':'mc','NI Top-Up':'tu'}[l.plan]||'yv';
+  const ldSrc = LD[ldKey];
+  // Priority 1: Lead चा saved data (refresh नंतर पण टिकतो)
+  // Priority 2: Live LD calculator data (refresh आधी)
+  const hasLeadData = l.members && l.members.length > 0 && l.memberPrems && l.memberPrems.length > 0;
+  const hasLDData   = ldSrc && ldSrc.memberPrems && ldSrc.memberPrems.length > 0;
+  
+  const members     = hasLeadData ? l.members     : hasLDData ? (ldSrc.members||ldSrc.ages||[]) : [];
+  const memberNames = hasLeadData ? l.memberNames : hasLDData ? (ldSrc.memberNames||[])          : [];
+  const memberPrems = hasLeadData ? l.memberPrems : hasLDData ? (ldSrc.memberPrems||[])          : [];
+  const discRows    = hasLeadData ? l.discountRows: hasLDData ? (ldSrc.discountRows||[])         : [];
+  const zone        = l.zone  || (hasLDData ? ldSrc.zone  : '') || '';
+  const freq        = l.freq  || (hasLDData ? ldSrc.freq  : '') || 'Annual';
+  const pt          = l.pt    || (hasLDData ? ldSrc.pt    : 1)  || 1;
+
+  const data = {
+    title: l.plan+' Policy',
+    name: l.name, mob: l.mob, si: siNum, siStr: l.si,
+    prem: prem, qd: l.qd,
+    zone: zone, freq: freq, pt: pt,
+    discounts: [], discountRows: discRows,
+    members: members, ages: members,
+    memberNames: memberNames, memberPrems: memberPrems,
+    feats: featsForPlan[l.plan.includes('Yuva')?'Yuva Bharat '+planKey:l.plan]
+         || featsForPlan[l.plan] || []
+  };
+  const htmlStr = buildHTMLContent(data);
+  
+  htmlToBlob(htmlStr).then(blob => {
+    if (blob && navigator.share && navigator.canShare) {
+      const fname = 'NIA_Quote_'+l.name.replace(/\s/g,'_')+'.pdf';
+      const file = new File([blob], fname, {type:'application/pdf'});
+      const shareData = type==='wa'
+        ? { files:[file], text: msg, title:'NIA Quote — '+l.name }
+        : { files:[file], title:'NIA Quote — '+l.name, text: msg };
+      if (navigator.canShare(shareData)) {
+        navigator.share(shareData)
+          .then(()=>showToast('✅ Share झाले!'))
+          .catch(()=>fallbackQuickShare(type, msg, blob, l.name));
+        return;
+      }
+    }
+    fallbackQuickShare(type, msg, blob, l.name);
+  });
+}
+
+function fallbackQuickShare(type, msg, blob, name) {
+  if (type === 'wa') {
+    // Download PDF + open WhatsApp
+    if(blob) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'NIA_Quote_'+name.replace(/\s/g,'_')+'.pdf';
+      a.click();
+      URL.revokeObjectURL(url);
+      setTimeout(()=>{
+        window.open('https://wa.me/?' + 'text=' + encodeURIComponent(msg));
+      }, 800);
+      showToast('📥 PDF Download + WhatsApp उघडले');
+    } else {
+      window.open('https://wa.me/?text=' + encodeURIComponent(msg));
+      showToast('💬 WhatsApp उघडले (PDF attach नाही)');
+    }
+  } else {
+    // Email with PDF download
+    if(blob) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'NIA_Quote_'+name.replace(/\s/g,'_')+'.pdf';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+    const subj = encodeURIComponent('New India Insurance — Premium Quotation — '+name);
+    const body = encodeURIComponent(msg);
+    window.open('mailto:?subject='+subj+'&body='+body);
+    showToast('✉️ Email उघडले — PDF attach करा');
+  }
+}
+
+
+function exportCSV(){
+  if(!leads.length)return showToast('⚠️ Leads नाहीत');
+  const h=['Name','Mobile','Email','Plan','SI','Premium','Status','Quote Date','Follow-up','Notes'];
+  const rows=leads.map(l=>[l.name,l.mob,l.email||'',l.plan||'',l.si||'',l.prem||'',l.status,l.qd||'',l.fu||'',(l.note||'').replace(/,/g,' ')]);
+  const csv=[h,...rows].map(r=>r.join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='NIA_Leads_'+todayStr()+'.csv';a.click();
+  showToast('📊 CSV Download झाली!');
+}
+
+// ════════════════════════════════════
+// PROFILE SYSTEM — Simple & Clean
+// ════════════════════════════════════
+let AP = {
+  name:'Devidas Nivrutti Patil', mobile:'9823438787', whatsapp:'',
+  email:'', designation:'Authorised Insurance Adviser',
+  agentcode:'', branch:'New India Assurance Co. Ltd.',
+  city:'', photo:'', stamp:''
+};
+
+function loadProfile(){
+  try{
+    const s=localStorage.getItem('nia-profile-v2');
+    if(s) Object.assign(AP,JSON.parse(s));
+    else {
+      const w=JSON.parse(window.name||'{}');
+      if(w['nia-profile']) Object.assign(AP,JSON.parse(w['nia-profile']));
+    }
+  }catch(e){}
+  renderProfile();
+}
+
+function saveProfileData(){
+  try{ localStorage.setItem('nia-profile-v2',JSON.stringify(AP)); }catch(e){}
+  try{ const w=JSON.parse(window.name||'{}'); w['nia-profile']=JSON.stringify(AP); window.name=JSON.stringify(w); }catch(e){}
+  const bar=document.getElementById('adv-bar-txt');
+  if(bar) bar.innerHTML='\u{1F468}\u200D\u{1F4BC} <strong>'+(AP.name||'')+'</strong> &nbsp;|&nbsp; \u{1F4DE} '+(AP.mobile||'');
+}
+
+function renderProfile(){
+  const p=AP;
+  // Hero bar
+  setT('ph-name', p.name||'Your Name');
+  setT('ph-sub', (p.designation||'Insurance Adviser')+' • '+(p.branch||'New India Assurance'));
+  setT('ph-mob', p.mobile||'');
+  showChip('ph-email-chip','ph-email-val',p.email);
+  showChip('ph-city-chip','ph-city-val',p.city);
+  // Photo
+  pfShowPhoto(p.photo);
+  // Stamp
+  pfShowStamp(p.stamp);
+  // Field rows
+  pfRenderField('name',      p.name,        'Devidas Nivrutti Patil');
+  pfRenderField('mobile',    p.mobile,      '9823438787');
+  pfRenderField('whatsapp',  p.whatsapp,    '');
+  pfRenderField('email',     p.email,       '');
+  pfRenderField('designation',p.designation,'Authorised Insurance Adviser');
+  pfRenderField('agentcode', p.agentcode,   '');
+  pfRenderField('branch',    p.branch,      'New India Assurance Co. Ltd.');
+  pfRenderField('city',      p.city,        '');
+  // PDF preview
+  setT('ppb-name', p.name||'');
+  setT('ppb-sub',  (p.designation||'Insurance Adviser')+' • '+(p.branch||''));
+  setT('ppb-mob',  p.mobile||'');
+  showChip('ppb-email-chip','ppb-email',p.email);
+  showChip('ppb-city-chip','ppb-city',p.city);
+  showChip('ppb-code-chip','ppb-code',p.agentcode);
+  const pi=document.getElementById('ppb-photo');
+  const pic=document.getElementById('ppb-ph-icon');
+  if(pi&&pic){if(p.photo){pi.src=p.photo;pi.style.display='block';pic.style.display='none';}else{pi.style.display='none';pic.style.display='';}}
+  // Update header bar
+  saveProfileData();
+}
+
+function openProfileEdit(){
+  // Fill ef-* fields from AP
+  const fields={name:AP.name,mobile:AP.mobile,whatsapp:AP.whatsapp,
+    email:AP.email,designation:AP.designation,agentcode:AP.agentcode,
+    branch:AP.branch,city:AP.city};
+  Object.entries(fields).forEach(([k,v])=>{
+    const el=document.getElementById('ef-'+k);
+    if(el) el.value=v||'';
+  });
+  // Fill photo in edit modal
+  const epImg=document.getElementById('ep-img');
+  const epPh=document.getElementById('ep-ph');
+  if(epImg&&epPh){
+    if(AP.photo){epImg.src=AP.photo;epImg.style.display='block';epPh.style.display='none';}
+    else{epImg.style.display='none';epPh.style.display='flex';}
+  }
+  // Fill stamp
+  const stImg=document.getElementById('stamp-img');
+  const stPh=document.getElementById('stamp-ph');
+  if(stImg&&stPh){
+    if(AP.stamp){stImg.src=AP.stamp;stImg.style.display='block';stPh.style.display='none';}
+    else{stImg.style.display='none';stPh.style.display='block';}
+  }
+  // Show overlay
+  const ov=document.getElementById('prof-edit-overlay');
+  if(ov){ov.style.display='flex';document.body.style.overflow='hidden';}
+}
+function closeProfileEdit(){
+  const ov=document.getElementById('prof-edit-overlay');
+  if(ov){ov.style.display='none';document.body.style.overflow='';}
+}
+function saveAllProfile(){
+  const fields=['name','mobile','whatsapp','email','designation','agentcode','branch','city'];
+  fields.forEach(k=>{
+    const el=document.getElementById('ef-'+k);
+    if(el) AP[k]=el.value.trim();
+  });
+  saveProfileData();
+  renderProfile();
+  closeProfileEdit();
+  showToast('✅ Profile Save झाली!');
+}
+
+function setT(id,v){const e=document.getElementById(id);if(e)e.textContent=v||'';}
+function showChip(cId,vId,v){
+  const c=document.getElementById(cId),e=document.getElementById(vId);
+  if(c)c.style.display=v?'inline-flex':'none';
+  if(e)e.textContent=v||'';
+}
+function pfRenderField(key,val,placeholder){
+  const el=document.getElementById('val-'+key);
+  if(!el)return;
+  if(val){el.textContent=val;el.className='pf-val';}
+  else{el.textContent='+ Add करा';el.className='pf-val empty';}
+}
+
+// Inline edit
+let _pfActive=null;
+function pfEdit(key){
+  if(_pfActive) pfCancel(_pfActive);
+  _pfActive=key;
+  const box=document.getElementById('ebox-'+key);
+  const inp=document.getElementById('einp-'+key);
+  if(!box||!inp)return;
+  inp.value=AP[key]||'';
+  box.style.display='block';
+  setTimeout(()=>{inp.focus();inp.scrollIntoView({behavior:'smooth',block:'center'});},80);
+}
+function pfCancel(key){
+  const box=document.getElementById('ebox-'+(key||_pfActive));
+  if(box) box.style.display='none';
+  if(_pfActive===key||!key) _pfActive=null;
+}
+function pfSave(key){
+  const inp=document.getElementById('einp-'+key);
+  if(!inp)return;
+  AP[key]=inp.value.trim();
+  pfCancel(key);
+  renderProfile();
+  showToast('\u2705 Saved!');
+}
+function pfDelete(key){
+  AP[key]='';
+  pfCancel(key);
+  renderProfile();
+  showToast('\uD83D\uDDD1\uFE0F Removed');
+}
+
+// Photo
+function openPhotoSheet(){
+  const s=document.getElementById('photo-sheet');
+  if(s){s.style.display='flex';}
+  const rb=document.getElementById('ph-remove-btn');
+  if(rb) rb.style.display=AP.photo?'block':'none';
+}
+function closePhotoSheet(){
+  const s=document.getElementById('photo-sheet');
+  if(s) s.style.display='none';
+}
+function pickPhoto(src){
+  closePhotoSheet();
+  const inp=document.getElementById('pp-file');
+  if(!inp)return;
+  inp.removeAttribute('capture');
+  if(src==='camera') inp.setAttribute('capture','user');
+  inp.value=''; inp.click();
+}
+function handlePhotoFile(inp){
+  const file=inp.files[0]; if(!file)return;
+  if(file.size>4*1024*1024)return showToast('\u26A0\uFE0F Photo 4MB पेक्षा कमी');
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const img=new Image();
+    img.onload=()=>{
+      const canvas=document.createElement('canvas');
+      const max=300; let w=img.width,h=img.height;
+      if(w>h){if(w>max){h=h*max/w;w=max;}}else{if(h>max){w=w*max/h;h=max;}}
+      canvas.width=w;canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      AP.photo=canvas.toDataURL('image/jpeg',0.75);
+      renderProfile(); pfShowPhoto(AP.photo);
+      showToast('\u2705 Photo saved!');
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+  inp.value='';
+}
+function removeProfilePhoto(){
+  AP.photo=''; closePhotoSheet(); renderProfile(); pfShowPhoto('');
+  showToast('\uD83D\uDDD1\uFE0F Photo removed');
+}
+function pfShowPhoto(photo){
+  const img=document.getElementById('pp-img');
+  const ph=document.getElementById('pp-ph');
+  if(!img||!ph)return;
+  if(photo){img.src=photo;img.style.display='block';ph.style.display='none';}
+  else{img.style.display='none';ph.style.display='flex';}
+}
+
+// Stamp
+function handleStampFile(inp){
+  const file=inp.files[0]; if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{AP.stamp=e.target.result;renderProfile();pfShowStamp(AP.stamp);showToast('\u2705 Stamp saved!');};
+  reader.readAsDataURL(file);
+  inp.value='';
+}
+function deleteStamp(){
+  AP.stamp=''; renderProfile(); pfShowStamp('');
+  showToast('\uD83D\uDDD1\uFE0F Stamp removed');
+}
+function pfShowStamp(stamp){
+  const img=document.getElementById('stamp-img');
+  const ph=document.getElementById('stamp-ph');
+  const btn=document.getElementById('stamp-del-btn');
+  const drop=document.getElementById('stamp-drop');
+  if(stamp){
+    if(img){img.src=stamp;img.style.display='block';}
+    if(ph) ph.style.display='none';
+    if(btn) btn.style.display='block';
+    if(drop) drop.style.borderStyle='solid',drop.style.borderColor='#C8102E';
+  }else{
+    if(img) img.style.display='none';
+    if(ph) ph.style.display='flex';
+    if(btn) btn.style.display='none';
+    if(drop) drop.style.borderStyle='dashed',drop.style.borderColor='#ddd';
+  }
+}
+function openMyWA(){
+  const num=AP.whatsapp||AP.mobile||'9823438787';
+  window.open('https://wa.me/91'+num,'_blank');
+}
+
+// INIT
+loadProfile();
+updDash();
+initLeads();
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='hidden') saveLS();
+});
+// Init first member for AK/SC/CC/MC/TU plans
+['ak','sc','cc','mc','tu'].forEach(function(p){
+  var el = document.getElementById(p+'-members');
+  if(el && memCount[p] < 1) addMem(p);  // Creates Member 1 (index 0)
+  var cnt = document.getElementById(p+'-mcnt');
+  if(cnt) cnt.textContent = memCount[p];
+});
+</script>
+
+
+<!-- ===== MY PROFILE ===== -->
+<div id="sec-myprofile" class="sec">
+
+  <!-- ── PROFILE HERO CARD ── -->
+  <div id="prof-view" style="background:linear-gradient(150deg,#B8001F 0%,#6a0010 100%);border-radius:22px;overflow:hidden;margin-bottom:14px;box-shadow:0 8px 28px rgba(184,0,31,.3)">
+
+    <!-- Top pattern bar -->
+    <div style="height:4px;background:linear-gradient(90deg,rgba(255,255,255,.0),rgba(255,255,255,.15),rgba(255,255,255,.0))"></div>
+
+    <!-- Photo + Name + Badges -->
+    <div style="padding:24px 20px 0;text-align:center">
+      <div style="position:relative;width:88px;height:88px;margin:0 auto 14px">
+        <img id="pp-img" src="" style="width:88px;height:88px;border-radius:50%;border:3.5px solid rgba(255,255,255,.35);object-fit:cover;display:none">
+        <div id="pp-ph" style="width:88px;height:88px;border-radius:50%;border:3.5px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:34px">👤</div>
+      </div>
+      <div id="vw-name" style="font-size:21px;font-weight:900;color:#fff;letter-spacing:.2px">Devidas Nivrutti Patil</div>
+      <div id="vw-des"  style="font-size:12px;color:rgba(255,255,255,.6);margin-top:3px;margin-bottom:16px">Authorised Insurance Adviser • New India Assurance</div>
+    </div>
+
+    <!-- Info chips row -->
+    <div style="display:flex;border-top:1px solid rgba(255,255,255,.1)">
+      <div style="flex:1;padding:12px 8px;text-align:center;border-right:1px solid rgba(255,255,255,.1)">
+        <div style="font-size:10px;color:rgba(255,255,255,.45);margin-bottom:3px">MOBILE</div>
+        <div id="vw-mob" style="font-size:13px;font-weight:700;color:#fff">9823438787</div>
+      </div>
+      <div id="vw-email-col" style="display:none;flex:1;padding:12px 8px;text-align:center;border-right:1px solid rgba(255,255,255,.1)">
+        <div style="font-size:10px;color:rgba(255,255,255,.45);margin-bottom:3px">EMAIL</div>
+        <div id="vw-email" style="font-size:11px;font-weight:600;color:#fff;word-break:break-all"></div>
+      </div>
+      <div id="vw-city-col" style="display:none;flex:1;padding:12px 8px;text-align:center">
+        <div style="font-size:10px;color:rgba(255,255,255,.45);margin-bottom:3px">CITY</div>
+        <div id="vw-city" style="font-size:13px;font-weight:700;color:#fff"></div>
+      </div>
+    </div>
+
+    <!-- Edit Profile Button -->
+    <div style="padding:12px 16px 16px">
+      <button onclick="openProfileEdit()" style="width:100%;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);color:#fff;border-radius:12px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.3px">✏️ &nbsp;Profile Edit करा</button>
+    </div>
+  </div>
+
+  <!-- ── EDIT MODAL (full screen overlay) ── -->
+  <div id="prof-edit-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1500;overflow-y:auto;-webkit-overflow-scrolling:touch">
+    <div style="min-height:100%;display:flex;align-items:flex-start;padding:16px 0 40px">
+      <div style="background:#F5F3F0;border-radius:20px;width:100%;max-width:480px;margin:0 auto;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+
+        <!-- Modal header -->
+        <div style="background:linear-gradient(135deg,#B8001F,#7a0015);padding:16px 18px;display:flex;align-items:center;justify-content:space-between">
+          <div style="font-size:17px;font-weight:800;color:#fff">✏️ Profile Edit करा</div>
+          <button onclick="closeProfileEdit()" style="background:rgba(255,255,255,.15);border:none;color:#fff;width:32px;height:32px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">✕</button>
+        </div>
+
+        <div style="padding:16px">
+
+          <!-- Photo section inside edit -->
+          <div style="background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;text-align:center">
+            <div style="font-size:11px;font-weight:800;color:#999;letter-spacing:.7px;margin-bottom:12px">📸 PROFILE PHOTO</div>
+            <div style="position:relative;width:80px;height:80px;margin:0 auto 12px;cursor:pointer" onclick="openPhotoSheet()">
+              <img id="ep-img" src="" style="width:80px;height:80px;border-radius:50%;border:3px solid #e8e4de;object-fit:cover;display:none">
+              <div id="ep-ph" style="width:80px;height:80px;border-radius:50%;border:2px dashed #ccc;background:#F9F7F5;display:flex;align-items:center;justify-content:center;font-size:30px">👤</div>
+              <div style="position:absolute;bottom:0;right:0;width:24px;height:24px;background:#C8102E;border-radius:50%;border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-size:11px">📷</div>
+            </div>
+            <input type="file" id="pp-file" accept="image/*" style="display:none" onchange="handlePhotoFile(this)">
+            <div style="font-size:12px;color:#aaa">Tap to change photo</div>
+          </div>
+
+          <!-- All fields in one form -->
+          <div style="background:#fff;border-radius:14px;overflow:hidden;margin-bottom:12px">
+            <div style="padding:12px 16px 8px;font-size:11px;font-weight:800;color:#999;letter-spacing:.7px;border-bottom:1px solid #F5F3F0">👤 BASIC INFO</div>
+
+            <div style="padding:10px 16px 4px">
+              <div style="font-size:11px;color:#999;font-weight:600;margin-bottom:5px">पूर्ण नाव *</div>
+              <input id="ef-name" type="text" placeholder="तुमचे पूर्ण नाव" style="width:100%;border:1.5px solid #E8E4DE;border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;background:#FAFAF9" onfocus="this.style.borderColor='#C8102E'" onblur="this.style.borderColor='#E8E4DE'">
+            </div>
+            <div style="padding:10px 16px 4px">
+              <div style="font-size:11px;color:#999;font-weight:600;margin-bottom:5px">Mobile Number *</div>
+              <input id="ef-mobile" type="tel" placeholder="10-digit Mobile" maxlength="10" style="width:100%;border:1.5px solid #E8E4DE;border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;background:#FAFAF9" onfocus="this.style.borderColor='#C8102E'" onblur="this.style.borderColor='#E8E4DE'">
+            </div>
+            <div style="padding:10px 16px 4px">
+              <div style="font-size:11px;color:#999;font-weight:600;margin-bottom:5px">WhatsApp <span style="font-size:10px;font-weight:400;color:#bbb">(Mobile वेगळा असेल तर)</span></div>
+              <input id="ef-whatsapp" type="tel" placeholder="WhatsApp Number" maxlength="10" style="width:100%;border:1.5px solid #E8E4DE;border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;background:#FAFAF9" onfocus="this.style.borderColor='#C8102E'" onblur="this.style.borderColor='#E8E4DE'">
+            </div>
+            <div style="padding:10px 16px 12px">
+              <div style="font-size:11px;color:#999;font-weight:600;margin-bottom:5px">Email Address</div>
+              <input id="ef-email" type="email" placeholder="yourname@gmail.com" style="width:100%;border:1.5px solid #E8E4DE;border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;background:#FAFAF9" onfocus="this.style.borderColor='#C8102E'" onblur="this.style.borderColor='#E8E4DE'">
+            </div>
+          </div>
+
+          <div style="background:#fff;border-radius:14px;overflow:hidden;margin-bottom:12px">
+            <div style="padding:12px 16px 8px;font-size:11px;font-weight:800;color:#999;letter-spacing:.7px;border-bottom:1px solid #F5F3F0">🏢 PROFESSIONAL INFO</div>
+
+            <div style="padding:10px 16px 4px">
+              <div style="font-size:11px;color:#999;font-weight:600;margin-bottom:5px">Designation</div>
+              <input id="ef-designation" type="text" placeholder="e.g. Senior Insurance Adviser" style="width:100%;border:1.5px solid #E8E4DE;border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;background:#FAFAF9" onfocus="this.style.borderColor='#C8102E'" onblur="this.style.borderColor='#E8E4DE'">
+            </div>
+            <div style="padding:10px 16px 4px">
+              <div style="font-size:11px;color:#999;font-weight:600;margin-bottom:5px">Agent Code / License No.</div>
+              <input id="ef-agentcode" type="text" placeholder="IRDA Agent Code" style="width:100%;border:1.5px solid #E8E4DE;border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;background:#FAFAF9" onfocus="this.style.borderColor='#C8102E'" onblur="this.style.borderColor='#E8E4DE'">
+            </div>
+            <div style="padding:10px 16px 4px">
+              <div style="font-size:11px;color:#999;font-weight:600;margin-bottom:5px">Branch / Company</div>
+              <input id="ef-branch" type="text" placeholder="Branch / Company Name" style="width:100%;border:1.5px solid #E8E4DE;border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;background:#FAFAF9" onfocus="this.style.borderColor='#C8102E'" onblur="this.style.borderColor='#E8E4DE'">
+            </div>
+            <div style="padding:10px 16px 12px">
+              <div style="font-size:11px;color:#999;font-weight:600;margin-bottom:5px">City / Area</div>
+              <input id="ef-city" type="text" placeholder="City, Maharashtra" style="width:100%;border:1.5px solid #E8E4DE;border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;background:#FAFAF9" onfocus="this.style.borderColor='#C8102E'" onblur="this.style.borderColor='#E8E4DE'">
+            </div>
+          </div>
+
+          <!-- Stamp section in edit -->
+          <div style="background:#fff;border-radius:14px;padding:14px 16px;margin-bottom:16px">
+            <div style="font-size:11px;font-weight:800;color:#999;letter-spacing:.7px;margin-bottom:12px">🔏 STAMP / SEAL <span style="font-size:10px;font-weight:500;color:#bbb">(PDF मध्ये येईल)</span></div>
+            <div id="stamp-drop" onclick="document.getElementById('stamp-file').click()" style="border:2px dashed #ddd;border-radius:12px;padding:14px;text-align:center;cursor:pointer;display:flex;align-items:center;justify-content:center;min-height:64px">
+              <img id="stamp-img" src="" style="max-width:160px;max-height:56px;object-fit:contain;display:none">
+              <div id="stamp-ph" style="display:flex;flex-direction:column;align-items:center;gap:4px">
+                <div style="font-size:22px">🔏</div>
+                <div style="font-size:12px;color:#bbb">Tap — Stamp Upload करा</div>
+              </div>
+            </div>
+            <input type="file" id="stamp-file" accept="image/*" style="display:none" onchange="handleStampFile(this)">
+            <button id="stamp-del-btn" onclick="deleteStamp()" style="display:none;width:100%;margin-top:8px;padding:9px;background:#FFF0F0;border:1px solid #ffcdd2;border-radius:9px;color:#C8102E;font-weight:700;cursor:pointer;font-size:12px">🗑️ Stamp Remove</button>
+          </div>
+
+          <!-- SAVE + CANCEL -->
+          <button onclick="saveAllProfile()" style="width:100%;background:linear-gradient(135deg,#C8102E,#8B0D20);color:#fff;border:none;border-radius:14px;padding:15px;font-size:16px;font-weight:800;cursor:pointer;margin-bottom:10px;letter-spacing:.3px;box-shadow:0 4px 16px rgba(184,0,31,.3)">💾 &nbsp;Profile Save करा</button>
+          <button onclick="closeProfileEdit()" style="width:100%;background:#F0EDE8;color:#666;border:none;border-radius:14px;padding:13px;font-size:14px;font-weight:600;cursor:pointer">Cancel</button>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Photo Bottom Sheet -->
+  <div id="photo-sheet" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:3000;align-items:flex-end" onclick="closePhotoSheet()">
+    <div style="background:#fff;border-radius:22px 22px 0 0;padding:20px 16px 36px;width:100%;box-sizing:border-box" onclick="event.stopPropagation()">
+      <div style="width:36px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto 16px"></div>
+      <div style="font-size:15px;font-weight:800;text-align:center;margin-bottom:16px;color:#1a1a1a">📸 Photo बदला</div>
+      <button onclick="pickPhoto('camera')"  style="width:100%;padding:14px 16px;background:#F9F7F5;border:none;border-radius:13px;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:10px;text-align:left;display:flex;align-items:center;gap:12px">📷 <span>Camera से Photo काढा</span></button>
+      <button onclick="pickPhoto('gallery')" style="width:100%;padding:14px 16px;background:#F9F7F5;border:none;border-radius:13px;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:10px;text-align:left;display:flex;align-items:center;gap:12px">🖼️ <span>Gallery से Upload करा</span></button>
+      <button id="ph-remove-btn" onclick="removeProfilePhoto()" style="display:none;width:100%;padding:14px 16px;background:#FFF0F0;border:none;border-radius:13px;font-size:15px;font-weight:700;cursor:pointer;color:#C8102E;text-align:left;display:flex;align-items:center;gap:12px">🗑️ <span>Photo Remove करा</span></button>
+    </div>
+  </div>
+
+  <!-- ── PDF Preview card (below hero, always visible) ── -->
+  <div style="background:#fff;border-radius:16px;padding:14px 16px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,.06)">
+    <div style="font-size:10.5px;font-weight:800;color:#bbb;letter-spacing:.7px;margin-bottom:10px">📄 PDF QUOTE मध्ये असे दिसेल</div>
+    <div style="background:linear-gradient(135deg,#0f2027,#203a43);border-radius:12px;padding:14px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div style="width:42px;height:42px;border-radius:50%;overflow:hidden;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">
+          <img id="ppb-photo" src="" style="width:100%;height:100%;object-fit:cover;display:none"><span id="ppb-ph-icon">👤</span>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:800;color:#fff" id="ppb-name">Devidas Nivrutti Patil</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.5)" id="ppb-sub">Authorised Insurance Adviser • New India Assurance Co. Ltd.</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap">
+        <div style="background:rgba(255,255,255,.08);border-radius:6px;padding:3px 9px;font-size:10.5px;color:rgba(255,255,255,.8)">📞 <span id="ppb-mob">9823438787</span></div>
+        <div id="ppb-email-chip" style="display:none;background:rgba(255,255,255,.08);border-radius:6px;padding:3px 9px;font-size:10.5px;color:rgba(255,255,255,.8)">✉️ <span id="ppb-email"></span></div>
+        <div id="ppb-city-chip"  style="display:none;background:rgba(255,255,255,.08);border-radius:6px;padding:3px 9px;font-size:10.5px;color:rgba(255,255,255,.8)">📍 <span id="ppb-city"></span></div>
+        <div id="ppb-code-chip"  style="display:none;background:rgba(255,255,255,.08);border-radius:6px;padding:3px 9px;font-size:10.5px;color:rgba(255,255,255,.8)">🔢 <span id="ppb-code"></span></div>
+      </div>
+    </div>
+  </div>
+
+</div>
